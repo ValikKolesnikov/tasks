@@ -1,34 +1,21 @@
-def format_string(string):
-    if string:
-        for char in string:
-            if not char.isalpha() and not char == ' ':
-                string = string.replace(char, '')
-        return string
-    return ''
-
-
-def get_text_from_file(path_to_file):
-    try:
-        with open(path_to_file, 'r') as file:
-            text = file.read()
-    except FileNotFoundError:
-        print('File not found')
-        return ''
-    except IsADirectoryError:
-        print('Excepted file but was given directory')
-    return text.lower()
-
+import argparse
+import sys
+import re
+import collections
 
 
 def sort_words_by_frequency(words_frequency):
     return sorted(words_frequency, key=lambda i: i[1], reverse=True)
 
 
-
 def count_most_common_words(text, words_count):
-    formated_text = format_string(text)
-    words_list = formated_text.split()
-    words_frequency = {i:words_list.count(i) for i in words_list}
+    pattern = re.compile(r'[-.?!,/()\'\":;]')
+    formated_text = re.sub(pattern, '', text)
+
+    all_words_list = formated_text.split()
+    unique_words_list = list(set(all_words_list))
+    words_counter = collections.Counter(all_words_list)
+    words_frequency = {word:words_counter[word] for word in unique_words_list}
     words_frequency = list(words_frequency.items())
 
     sorted_words_frequency = sort_words_by_frequency(words_frequency)
@@ -37,17 +24,20 @@ def count_most_common_words(text, words_count):
 
 
 def print_results(words_frequency):
-    for i in words_frequency:
-        print(f'{i[0]}: {i[1]}')
+    for item in words_frequency:
+        print(f'{item[0]}: {item[1]}')
 
 
 if __name__ == '__main__':
-    path_to_file = input('Enter path to file\n')
-    try:
-        output_words_number = int(input('Enter a number of the most common words to display\n'))
-    except ValueError:
-        print('Value error: given string but excepted int')
-        output_words_number = 1
-    text = get_text_from_file(path_to_file)
-    words_frequency = count_most_common_words(text, output_words_number)
+    parser = argparse.ArgumentParser('Finding a most common words')
+    parser.add_argument('file', metavar='Path', nargs='?', type=argparse.FileType('r'), default=sys.stdin, help='path to file that will parse')
+    parser.add_argument('number_to_display', metavar='N', nargs='?', type=int, help='number of the most common words to display')
+    
+    args = parser.parse_args(['./text.txt', '10'])
+    # args = parser.parse_args()
+
+    text = args.file.read().lower()
+    args.file.close()
+
+    words_frequency = count_most_common_words(text, args.number_to_display)
     print_results(words_frequency)
