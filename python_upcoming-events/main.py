@@ -6,7 +6,6 @@ import threading
 import concurrent.futures
 from operator import attrgetter
 
-
 Event = namedtuple('Event', 'title location date_start date_end')
 
 
@@ -17,6 +16,7 @@ def format_date_for_output(date):
 def reformat_event_date(date):
     reformat_date = dt.strptime(date, '%Y-%m-%dT%H:%M:%S%z')
     return reformat_date
+
 
 def get_events_links(main_link):
     soup = get_soup(main_link)
@@ -31,20 +31,18 @@ def get_event_info(link):
     soup = get_soup(link)
 
     return Event(soup.select_one('h1.single-event-title').text.strip(),
-                    soup.select_one('span.single-event-location').text.strip(),
-                    reformat_event_date(soup.select_one('time.date-start')['datetime']),
-                    reformat_event_date(soup.select_one('time.date-end')['datetime']))
+                 soup.select_one('span.single-event-location').text.strip(),
+                 reformat_event_date(soup.select_one('time.date-start')['datetime']),
+                 reformat_event_date(soup.select_one('time.date-end')['datetime']))
 
 
 def get_events_info(main_link):
     events_links = get_events_links(main_link)
     events_info = []
-   
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(events_links)) as executor:
-        futures = [executor.submit(get_event_info, link) for link in events_links]
 
-        for future in concurrent.futures.as_completed(futures):
-            events_info.append(future.result())
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(events_links)) as executor:
+        events_info = list(executor.map(get_event_info, events_links))
+
     events_info.sort(key=attrgetter('date_start'))
     return events_info
 
