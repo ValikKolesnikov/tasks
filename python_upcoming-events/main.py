@@ -4,7 +4,6 @@ from datetime import datetime as dt
 from collections import namedtuple
 import threading
 import concurrent.futures
-from operator import attrgetter
 
 Event = namedtuple('Event', 'title location date_start date_end')
 
@@ -43,7 +42,6 @@ def get_events_info(main_link):
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(events_links)) as executor:
         events_info = list(executor.map(get_event_info, events_links))
 
-    events_info.sort(key=attrgetter('date_start'))
     return events_info
 
 
