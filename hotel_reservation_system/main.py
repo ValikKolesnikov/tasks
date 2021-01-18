@@ -1,21 +1,19 @@
-from hotel_system import *
+import hotel_system
+from datetime import datetime
 
 
 def main():
-    hotel = Hotel('Tourist')
-    person_1 = Person('John', 3000)
-    person_2 = Person('Mike', 3000)
-    person_3 = Person('Dan', 5)
+    hotel = hotel_system.Hotel(name='Tourist', rooms=[])
+    person_1 = hotel_system.Person(name='John', money=3000)
+    person_2 = hotel_system.Person(name='Mike', money=3000)
 
-    hotel.add_rooms(generate_rooms(20))
+    hotel.add_rooms(hotel_system.generate_rooms(count=20))
     hotel.show_price_list()
-    room = hotel.get_room_by_number(3)
-    room_2 = hotel.get_room_by_number(3)
-    hotel.allocate_room(person_1, room, 2)
-    hotel.allocate_room(person_2, room, 1)
-    hotel.allocate_room(person_3, room_2, 10)
-    hotel.release_room(room)
-    hotel.allocate_room(person_2, room, 1)
+    room = hotel.get_room_by_number(number=3)
+    hotel.allocate_room(person=person_1, room=room, date_start=datetime(2021, 1, 18), date_end=datetime(2021, 1, 30))
+    hotel.allocate_room(person=person_2, room=room, date_start=datetime(2021, 1, 18), date_end=datetime(2021, 1, 30))
+    hotel.release_room(room=room)
+    hotel.allocate_room(person=person_2, room=room, date_start=datetime(2021, 1, 18), date_end=datetime(2021, 1, 30))
 
 
 if __name__ == '__main__':

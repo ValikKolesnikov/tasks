@@ -1,8 +1,17 @@
 import random
+from datetime import datetime
+
+
+class RoomIsNotBookableError(Exception):
+    pass
+
+
+class RoomIsNotExistInHotelError(Exception):
+    pass
 
 
 class Hotel:
-    def __init__(self, name, rooms=[]):
+    def __init__(self, name, rooms):
         self.__name = name
         self.__rooms = rooms
 
@@ -25,13 +34,17 @@ class Hotel:
         self.rooms.extend(rooms)
 
     def release_room(self, room):
-        room.tenant = None
-        print(f'Room #{room.number} is free')
+        if room in self.rooms:
+            room.tenant = None
+            room.release_date = None
+            print(f'Room #{room.number} is free')
+        else:
+            raise RoomIsNotExistInHotelError()
 
     def show_price_list(self):
         for room in self.rooms:
             print(f'Room #{room.number}\n'
-                  f'Is booked: {room.is_booked}\n'
+                  f'Is free: {room.is_free()}\n'
                   f'Cost: ${room.cost}/day\n')
 
     def get_room_by_number(self, number):
@@ -40,13 +53,15 @@ class Hotel:
                 return room
         return None
 
-    def allocate_room(self, person, room, days_count):
-        if not room.tenant and days_count * person.money:
+    def allocate_room(self, person, room, date_start, date_end):
+        days_count = (date_end - date_start).days
+        if days_count * room.cost < person.money and room in self.rooms and room.is_free():
             room.tenant = person
+            room.release_date = date_end
             person.money -= days_count * room.cost
             print('Congratulations! Room is booked')
         else:
-            print('You can not book this room(')
+            raise RoomIsNotBookableError('You can not book this room(')
 
 
 class Room:
@@ -54,9 +69,12 @@ class Room:
         self.__number = number
         self.__cost = cost
         self.__tenant = None
+        self.__release_date = None
 
-    def is_booked(self):
-        return not self.tenant is None
+    def is_free(self):
+        if self.release_date is None:
+            return True
+        return self.release_date < datetime.now()
 
     @property
     def number(self):
@@ -74,6 +92,14 @@ class Room:
     def cost(self):
         return self.__cost
 
+    @property
+    def release_date(self):
+        return self.__release_date
+
+    @release_date.setter
+    def release_date(self, date):
+        self.__release_date = date
+
 
 class Person:
     def __init__(self, name, money=100):
@@ -86,7 +112,7 @@ class Person:
 
     @money.setter
     def money(self, sum):
-        self.__money += sum
+        self.__money = sum
 
     @property
     def name(self):
