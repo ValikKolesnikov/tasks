@@ -9,6 +9,7 @@ class RoomIsNotBookableError(Exception):
 class RoomDoesNotExistInHotelError(Exception):
     pass
 
+
 class OrderDoesNotExistError(Exception):
     pass
 
@@ -37,7 +38,7 @@ class Hotel:
         self.rooms.extend(rooms)
 
     def release_room(self, room, order):
-        if room in self.rooms:
+        if room in self.rooms and order in room.orders:
             room.orders.remove(order)
             print(f'{order.person.name} is gone room #{room.number}')
         else:
@@ -95,9 +96,12 @@ class Room:
 
     def is_free(self, date_start, date_end):
         for order in self.orders:
-            if self.is_date_between(date_start, order.date_start, order.date_end) or self.is_date_between(date_end,
-                                                                                                          order.date_start,
-                                                                                                          order.date_end):
+            if (
+                self.is_date_between(date_start, order.date_start, order.date_end) 
+                or self.is_date_between(date_end, order.date_start, order.date_end)
+                or self.is_date_between(order.date_start, date_start, date_end)
+                or self.is_date_between(order.date_end, date_start, date_end)
+                ):
                 return False
         return True
 
