@@ -92,16 +92,16 @@ class Room:
         return self.__cost
 
     def is_date_between(self, date, date_start, date_end):
-        return date_start <= date <= date_end
+        return date_start < date < date_end
 
     def is_free(self, date_start, date_end):
         for order in self.orders:
             if (
-                self.is_date_between(date_start, order.date_start, order.date_end) 
-                or self.is_date_between(date_end, order.date_start, order.date_end)
-                or self.is_date_between(order.date_start, date_start, date_end)
-                or self.is_date_between(order.date_end, date_start, date_end)
-                ):
+                    self.is_date_between(date_start, order.date_start, order.date_end)
+                    or self.is_date_between(date_end, order.date_start, order.date_end)
+                    or self.is_date_between(order.date_start, date_start, date_end)
+                    or self.is_date_between(order.date_end, date_start, date_end)
+            ):
                 return False
         return True
 
@@ -110,7 +110,6 @@ class Room:
             if order.person == person and order.date_start == date_start and order.date_end == date_end:
                 return order
             raise OrderDoesNotExistError()
-    
 
 
 class Person:
