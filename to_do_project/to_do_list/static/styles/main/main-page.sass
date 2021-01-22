@@ -1,0 +1,82 @@
+@import "_colors"
+
+.todo
+  min-height: 80vh
+  background-color: $dark-bg-color
+
+  &-add
+    width: 25vw
+    margin: 0 auto
+    position: relative
+    top: 50px
+
+    &__text
+      background-color: transparent
+      border: none
+      border-bottom: 1px solid $light-font-color
+      display: block
+      width: 100%
+      outline: none
+      color: $light-font-color
+      padding: 4px 10px
+      margin-bottom: 15px
+      font-size: 1.7rem
+      &:focus, &:active
+        outline: none
+
+    &__submit
+      background-color: $first
+      cursor: pointer
+    &__label
+      color: $light-font-color
+      display: inline-block
+      margin-bottom: 10px
+
+  &__btn
+    padding: 7px 15px
+    color: $light-font-color
+    border-radius: 5px
+    font-size: 1.4rem
+    border: none
+
+  &-list
+    width: 40vw
+    margin: 0 auto
+    padding: 100px 0
+    &__empty
+      color: $light-font-color
+      text-align: center
+      border-bottom: 1px solid $light-font-color
+      padding: 20px 0
+      font-weight: lighter
+
+  &-item
+    border-bottom: 2px solid $light-font-color
+    padding: 20px 0
+    display: flex
+    align-items: center
+    justify-content: space-between
+    &__category
+      font-size: 1.3rem
+      color: $first
+
+    &__delete
+      background-color: $fourth
+
+    &__edit
+      background-color: $third
+
+    &__info
+      color: $light-font-color
+
+    &__title
+      font-size: 1.6rem
+      color: $second
+      font-weight: lighter
+
+    &__date
+      font-size: 1.3rem
+      color: rgba($light-font-color, 0.6)
+
+
+

@@ -1,0 +1,7 @@
+<form method="post" action="{% url 'add_todo_view' category|default:'default' %}" class="todo-add">
+    {% csrf_token %}
+    <label class="todo-add__label" for="{{ add_form.text.id_for_label }}">Task</label>
+    {{ add_form.text }}
+    {{ add_form.text.errors }}
+    <input class="todo-add__submit todo__btn" type="submit" value="Add">
+</form>
