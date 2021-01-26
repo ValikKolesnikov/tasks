@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('text', models.CharField(max_length=300, verbose_name='Text')),
                 ('date', models.DateTimeField(auto_now=True, verbose_name='DateTime')),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='to_do_list.category')),
+                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='todos.category')),
             ],
         ),
     ]

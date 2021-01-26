@@ -21,16 +21,35 @@
       padding: 4px 10px
       margin-bottom: 15px
       font-size: 1.7rem
+
       &:focus, &:active
         outline: none
 
     &__submit
       background-color: $first
       cursor: pointer
+      margin-top: 25px
+
     &__label
       color: $light-font-color
       display: inline-block
       margin-bottom: 10px
+
+    &__category
+      border: 1px solid $light-font-color
+      background-color: transparent
+      color: $light-font-color
+      padding: 5px 10px
+      margin: 10px 0
+      option
+        color: $dark-header-color
+    &__tags
+      li
+        display: inline-block
+        margin-left: 5px
+        color: $light-font-color
+
+
 
   &__btn
     padding: 7px 15px
@@ -43,6 +62,7 @@
     width: 40vw
     margin: 0 auto
     padding: 100px 0
+
     &__empty
       color: $light-font-color
       text-align: center
@@ -56,9 +76,13 @@
     display: flex
     align-items: center
     justify-content: space-between
+
     &__category
       font-size: 1.3rem
       color: $first
+
+      a
+        color: $first
 
     &__delete
       background-color: $fourth
@@ -70,13 +94,15 @@
       color: $light-font-color
 
     &__title
-      font-size: 1.6rem
-      color: $second
+      font-size: 1.8rem
+      color: $light-font-color
       font-weight: lighter
 
     &__date
       font-size: 1.3rem
       color: rgba($light-font-color, 0.6)
 
-
+.errorlist
+  color: rgba($fourth, 0.7)
+  font-size: 1.3rem
 

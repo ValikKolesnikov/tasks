@@ -1,0 +1,8 @@
+Django==3.1.1
+idna==2.10
+jdcal==1.4.1
+pyinstaller==4.0
+pyinstaller-hooks-contrib==2020.10
+requests==2.24.0
+sqlparse==0.3.1
+

@@ -5,7 +5,7 @@ from django.views.static import serve
 from to_do_project import settings
 
 urlpatterns = [
-    path('', include('to_do_list.urls')),
+    path('', include('todos.urls')),
     path('admin/', admin.site.urls),
 ]
 

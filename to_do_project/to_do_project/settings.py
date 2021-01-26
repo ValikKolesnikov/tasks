@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'to_do_list',
+    'todos',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -112,7 +112,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-LANGUAGE_CODE = 'ru'
+LANGUAGE_CODE = 'en'
 LANGUAGES = (
     ('en', 'English'),
     ('ru', 'Russian'),

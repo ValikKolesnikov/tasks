@@ -1,0 +1,13 @@
+<form method="post" action="{% url 'edit_todo_view' id %}" class="todo-add">
+    {% csrf_token %}
+    <label class="todo-add__label" for="{{ edit_form.text.id_for_label }}">Task:</label>
+    {{ edit_form.text }}
+    {{ edit_form.text.errors }}
+    <label class="todo-add__label" for="{{ edit_form.category.id_for_label }}">Categories:</label><br>
+    {{ edit_form.category }}
+    {{ edit_form.category.errors }}<br>
+    <label class="todo-add__label" for="{{ edit_form.tags.id_for_label }}">Tags:</label>
+    {{ edit_form.tags }}
+    {{ edit_form.tags.errors }}
+    <input class="todo-add__submit todo__btn" type="submit" value="Save">
+</form>
