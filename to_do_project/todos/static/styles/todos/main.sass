@@ -1,0 +1,59 @@
+@import "_colors"
+
+*
+  margin: 0
+  padding: 0
+
+html
+  font-size: 10px
+
+body
+  font-size: 1.6rem
+  font-family: 'Open Sans', sans-serif
+
+ul
+  list-style: none
+
+a
+  text-decoration: none
+
+.content
+  min-height: 80vh
+
+.xl-block
+  width: 90vw
+  margin: 0 auto
+
+.main-header
+  background-color: $dark-header-color
+
+  &__navig
+    display: flex
+
+    &-item
+      margin-right: 20px
+      height: 100%
+
+  &__link
+    color: $light-font-color
+    border-right: 1px solid $light-font-color
+    border-left: 1px solid $light-font-color
+    padding: 10px 20px
+    display: inline-block
+
+  &__logo
+    padding: 10px 20px
+    display: inline-block
+    color: $light-font-color
+
+
+.main-footer
+  height: 200px
+  background-color: $dark-header-color
+  color: $light-font-color
+  position: relative
+  &__description
+    position: absolute
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)

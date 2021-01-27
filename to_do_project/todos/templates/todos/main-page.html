@@ -1,0 +1,15 @@
+{% extends 'todos/wrapper.html' %}
+
+{% block title %}Main page{% endblock %}
+{% block styles %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static "styles/todos/main-page.css" %}">
+{% endblock %}
+
+{% block content %}
+    <section class="todo">
+        {% include "todos/includes/todo-add.html" %}
+        {% include "todos/includes/todo-list.html" %}
+    </section>
+{% endblock %}
+
