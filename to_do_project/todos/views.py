@@ -5,22 +5,9 @@ from .forms import ToDoForm
 from django.views.decorators.csrf import csrf_exempt
 
 
-def add_tags_to_todo(tags, todo):
-    if todo.tags.all():
-        for tag in tags:
-            if tag not in todo.tags.all():
-                todo.tags.add(tag)
-        for tag in todo.tags.all():
-            if tag not in tags:
-                todo.tags.remove(tag)
-    else:
-        for tag in tags:
-            todo.tags.add(tag)
-
-
 def main_page_view(request):
     args = {
-        'todos': ToDo.objects.all(),
+        'todos': ToDo.objects.prefetch_related('tags').select_related('category').all(),
         'add_form': ToDoForm()
     }
     return render(request, 'todos/main-page.html', args)
@@ -38,7 +25,7 @@ def add_todo_view(request):
                 todo.category = category
             todo.save()
             if tags:
-                add_tags_to_todo(tags=tags, todo=todo)
+                todo.tags.set(tags)
         else:
             args['add_form'] = add_form
             return render(request, 'todos/main-page.html', args)
@@ -47,7 +34,7 @@ def add_todo_view(request):
 
 def edit_todo_view(request, id):
     args = {'id': id}
-    todo = ToDo.objects.get(id=id)
+    todo = ToDo.objects.prefetch_related('tags').select_related('category').get(id=id)
     if request.method == 'POST':
         edit_form = ToDoForm(request.POST)
         if edit_form.is_valid():
@@ -55,7 +42,7 @@ def edit_todo_view(request, id):
             todo.text = text
             todo.category = category
             todo.save()
-            add_tags_to_todo(tags=tags, todo=todo)
+            todo.tags.set(tags)
             return redirect('main_page_view')
         else:
             args['edit_form'] = edit_form
@@ -76,7 +63,7 @@ def delete_todo_view(request, id):
 def category_page_view(request, category_name):
     category = get_object_or_404(Category, name=category_name)
     args = {
-        'todos': ToDo.objects.filter(category=category),
+        'todos': ToDo.objects.prefetch_related('tags').select_related('category').filter(category=category),
         'add_form': ToDoForm()
     }
     return render(request, 'todos/main-page.html', args)
