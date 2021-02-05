@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .services import ToDoService, CategoryService, TagService
+import todos.services.todo as todo_service
 
 
 class CategorySerializer(serializers.Serializer):
@@ -19,11 +19,11 @@ class ToDoSerializer(serializers.Serializer):
     tags = TagSerializer(many=True)
 
     def create(self, validated_data):
-        data = ToDoService.get_data_from_validation(self, validated_data)
-        todo = ToDoService.create(text=data['text'], category=data['category'], tags=data['tags'])
+        data = todo_service.get_data_from_validation(self, validated_data)
+        todo = todo_service.create(text=data['text'], category=data['category'], tags=data['tags'])
         return todo
 
     def update(self, instance, validated_data):
-        data = ToDoService.get_data_from_validation(self, validated_data)
-        todo = ToDoService.update(instance, text=data['text'], category=data['category'], tags=data['tags'])
+        data = todo_service.get_data_from_validation(self, validated_data)
+        todo = todo_service.update(instance, text=data['text'], category=data['category'], tags=data['tags'])
         return todo
