@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 from rest_framework.generics import get_object_or_404
-
 import accounts.services.user_service as user_service
+import jwt
+from accounts_api.settings import SECRET_KEY
 
 
 class PasswordResetSerializer(serializers.Serializer):
@@ -28,7 +29,6 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ('id', 'name', 'permissions')
-        extra_kwargs = {'name': {'validators': []}}
 
 
 class UserRequestSerializer(serializers.ModelSerializer):
@@ -37,6 +37,26 @@ class UserRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password', 'groups')
+
+    def get_user_from_serializer(self):
+        self.is_valid(raise_exception=True)
+        username, email, password, groups = self.validated_data.values()
+        user = User(username=username,
+                    password=password,
+                    email=email)
+
+        user.save()
+        user.groups.set(groups)
+        return user
+
+
+class UserResponseSerializer(serializers.ModelSerializer):
+    groups = GroupSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'password', 'groups')
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         username, email, password, _ = validated_data.values()
@@ -58,27 +78,14 @@ class UserRequestSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserResponseSerializer(serializers.ModelSerializer):
-    groups = GroupSerializer(many=True)
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'password', 'groups')
-        extra_kwargs = {'password': {'write_only': True}}
-
-
-class TokenResponseSerializer(serializers.ModelSerializer):
+class TokenResponseSerializer(serializers.Serializer):
     token = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'groups')
+    username = serializers.CharField()
 
 
-class ObtainTokenSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', 'password')
+class ObtainTokenSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
 
     def validate(self, attrs):
         username, password = attrs.values()
@@ -89,4 +96,30 @@ class ObtainTokenSerializer(serializers.ModelSerializer):
         if not user.check_password(password):
             raise serializers.ValidationError('Wrong password')
 
+        token_payload = {
+            'user_id': user.id
+        }
+        token = jwt.encode(payload=token_payload,
+                           algorithm='HS256',
+                           key=SECRET_KEY).decode(encoding='utf-8')
+        return {'username': username,
+                'token': token
+                }
 
+
+class VerifyTokenSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+    def validate(self, attrs):
+        token = attrs.get('token')
+        try:
+            decode_token = jwt.decode(jwt=token,
+                                      algorithms='HS256',
+                                      key=SECRET_KEY)
+            user = get_object_or_404(queryset=User.objects.all(), id=decode_token['user_id'])
+        except jwt.DecodeError as error:
+            raise serializers.ValidationError(error)
+        return {
+            'token': token,
+            'username': user.username
+        }

@@ -1,20 +1,19 @@
 from django.db.models import Count
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User, Group
-from accounts.services import user_service
 import accounts.serializers as serializers
 from datetime import datetime
-from rest_framework_jwt
+import jwt
+
+from accounts_api.settings import SECRET_KEY
 
 
 class UserList(APIView):
     def get(self, request):
-        groups = []
         groups_str = request.query_params.get('groups')
         if groups_str:
             users = User.objects.prefetch_related('groups', 'groups__permissions').filter(
@@ -26,10 +25,8 @@ class UserList(APIView):
 
     def post(self, request):
         request_serializer = serializers.UserRequestSerializer(data=request.data)
-        response_data = user_service.get_response_data(request_serializer=request_serializer)
-        response_serializer = serializers.UserResponseSerializer(data=response_data)
-        response_serializer.is_valid(raise_exception=True)
-        request_serializer.save()
+        user = request_serializer.get_user_from_serializer()
+        response_serializer = serializers.UserResponseSerializer(user)
         return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -45,6 +42,11 @@ class UserDetail(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(data=serializer.data)
+
+    def delete(self, request, id):
+        user = get_object_or_404(queryset=User.objects.all(), id=id)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class GroupList(APIView):
@@ -98,7 +100,8 @@ class UserRegisteredCount(APIView):
 
 class UserGroups(APIView):
     def get(self, request):
-        group_ids = [group.id for group in Group.objects.all() if group.user_set]
+        groups = Group.objects.filter(user__exact=not None)
+        group_ids = [group.id for group in groups]
         return Response(data=group_ids)
 
 
@@ -110,36 +113,18 @@ class GroupUsersCount(APIView):
 
 
 class ObtainToken(APIView):
-    def get(self, request):
-        return Response()
-
     def post(self, request):
-        request_serializer = serializers.ObtainTokenSerializer(data=request.data)
-        request_serializer.is_valid(raise_exception=True)
-
-        # username = request.data.get('username')
-        # password = request.data.get('password')
-        # user = get_object_or_404(queryset=User.objects.all(), username=username)
-        # if user.check_password(password):
-        #     token = Token.objects.get_or_create(user=user)[0]
-        #     data = {
-        #         'token': token.key
-        #     }
-        #     data.update(UserResponseSerializer(user).data)
-        #     return Response(data=data)
-        # return Response(data={'detail': 'Wrong password!'})
+        token_serializer = serializers.ObtainTokenSerializer(data=request.data)
+        token_serializer.is_valid(raise_exception=True)
+        response_serializer = serializers.TokenResponseSerializer(data=token_serializer.validated_data)
+        response_serializer.is_valid(raise_exception=True)
+        return Response(data=response_serializer.data)
 
 
 class VerifyToken(APIView):
-    def get(self, request):
-        return Response()
-
     def post(self, request):
-        if Token.objects.get(user=request.user).key == request.data.get('token'):
-            data = {
-                'token': request.data.get('token')
-            }
-            data.update(serializers.UserResponseSerializer(request.user).data)
-            return Response(data=data)
-        else:
-            return Response(data={'token': 'Wrong token'})
+        verify_serializer = serializers.VerifyTokenSerializer(data=request.data)
+        verify_serializer.is_valid(raise_exception=True)
+        response_serializer = serializers.TokenResponseSerializer(data=verify_serializer.validated_data)
+        response_serializer.is_valid(raise_exception=True)
+        return Response(data=response_serializer.data)

@@ -1,6 +1,4 @@
 from django.contrib.auth.models import User, Group
-from rest_framework.generics import get_object_or_404
-from accounts.serializers import UserRequestSerializer, GroupSerializer
 
 
 def create(username, email, password, group_ids):
@@ -24,12 +22,3 @@ def update(user, username, email, groups_data):
     return user
 
 
-def get_response_data(request_serializer):
-    request_serializer.is_valid(raise_exception=True)
-    data = request_serializer.validated_data
-    data['groups'] = []
-    if request_serializer.initial_data.get('groups'):
-        groups = Group.objects.filter(id__in=request_serializer.initial_data.get('groups'))
-        groups_data = [GroupSerializer(group).data for group in groups]
-        data['groups'] = groups_data
-    return data
