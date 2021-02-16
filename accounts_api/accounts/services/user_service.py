@@ -1,13 +1,11 @@
 from django.contrib.auth.models import User, Group
+from rest_framework.generics import get_object_or_404
+from accounts.serializers import UserRequestSerializer, GroupSerializer
 
 
-def get_data_from_validated_data(serializer, validated_data):
-    pass
-
-
-def create(username, email, password, groups_data):
+def create(username, email, password, group_ids):
     user = User(username=username, email=email)
-    groups = [Group.objects.get(id=group['id']) for group in groups_data]
+    groups = Group.objects.prefetch_related('permissions').filter(id__in=group_ids)
     user.set_password(password)
     user.save()
     user.groups.set(groups)
@@ -21,6 +19,17 @@ def update(user, username, email, groups_data):
         user.email = email
     user.save()
     if groups_data:
-        groups = [Group.objects.get(id=group['id']) for group in groups_data]
-        user.groups.set(groups)
+        group_ids = [group['id'] for group in groups_data]
+        user.groups.set(Group.objects.prefetch_related('permissions').filter(id__in=group_ids))
     return user
+
+
+def get_response_data(request_serializer):
+    request_serializer.is_valid(raise_exception=True)
+    data = request_serializer.validated_data
+    data['groups'] = []
+    if request_serializer.initial_data.get('groups'):
+        groups = Group.objects.filter(id__in=request_serializer.initial_data.get('groups'))
+        groups_data = [GroupSerializer(group).data for group in groups]
+        data['groups'] = groups_data
+    return data

@@ -1,15 +1,15 @@
+from django.db.models import Count
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User, Group
-from .serializers import UserSerializer, GroupSerializer, PasswordResetSerializer
+from accounts.services import user_service
+import accounts.serializers as serializers
 from datetime import datetime
-from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
+from rest_framework_jwt
 
 
 class UserList(APIView):
@@ -17,30 +17,31 @@ class UserList(APIView):
         groups = []
         groups_str = request.query_params.get('groups')
         if groups_str:
-            groups = [Group.objects.filter(name=group_name).first() for group_name in groups_str.split(',')]
-            users = User.objects.filter(groups__in=groups)
+            users = User.objects.prefetch_related('groups', 'groups__permissions').filter(
+                groups__name__in=groups_str.split(','))
         else:
-            users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
+            users = User.objects.prefetch_related('groups', 'groups__permissions').all()
+        serializer = serializers.UserResponseSerializer(users, many=True)
         return Response(data=serializer.data)
 
     def post(self, request):
-        s = UserSerializer(User(username="asdf", password='123'))
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        request_serializer = serializers.UserRequestSerializer(data=request.data)
+        response_data = user_service.get_response_data(request_serializer=request_serializer)
+        response_serializer = serializers.UserResponseSerializer(data=response_data)
+        response_serializer.is_valid(raise_exception=True)
+        request_serializer.save()
+        return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UserDetail(APIView):
     def get(self, request, id):
         user = get_object_or_404(queryset=User.objects.all(), id=id)
-        serializer = UserSerializer(user)
+        serializer = serializers.UserResponseSerializer(user)
         return Response(data=serializer.data)
 
     def patch(self, request, id):
         user = get_object_or_404(queryset=User.objects.all(), id=id)
-        serializer = UserSerializer(instance=user, data=request.data, partial=True)
+        serializer = serializers.UserResponseSerializer(instance=user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(data=serializer.data)
@@ -49,58 +50,49 @@ class UserDetail(APIView):
 class GroupList(APIView):
     def get(self, request):
         groups = Group.objects.all()
-        serializer = GroupSerializer(groups, many=True)
+        serializer = serializers.GroupSerializer(groups, many=True)
         return Response(data=serializer.data)
 
 
 class CurrentUserDetail(APIView):
     def get(self, request):
         current_user = request.user
-        serializer = UserSerializer(current_user)
+        serializer = serializers.UserResponseSerializer(current_user)
         return Response(data=serializer.data)
 
 
 class PasswordReset(APIView):
-    def get(self, request, id):
-        user = get_object_or_404(queryset=User.objects.all(), id=id)
-        serializer = UserSerializer(instance=user)
-        return Response(data=serializer.data)
-
     def patch(self, request, id):
         user = get_object_or_404(queryset=User.objects.all(), id=id)
-        serializer = PasswordResetSerializer(data=request.data)
+        request.data.update({'user_id': id})
+        serializer = serializers.PasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if not user.check_password(serializer.data.get('old_password')):
-            return Response(data={'old_password': 'Wrong password'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            user.set_password(serializer.data.get('new_password'))
-            user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        user.set_password(serializer.data.get('new_password'))
+        user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserCount(APIView):
     def get(self, request):
         if request.query_params.get('only_admin') == 'True':
-            users = [user for user in User.objects.all() if user.is_superuser]
-            return Response(data={'admin_count': len(users)})
+            users = User.objects.filter(is_superuser=True)
+            return Response(data={'admin_count': users.count()})
         elif request.query_params.get('only_active') == 'True':
-            users = [user for user in User.objects.all() if user.is_active]
-            return Response(data={'active_count': len(users)})
+            users = User.objects.filter(is_active=True)
+            return Response(data={'active_count': users.count()})
         else:
-            return Response(data={'users_count': len(User.objects.all())})
+            return Response(data={'users_count': User.objects.count()})
 
 
 class UserRegisteredCount(APIView):
     def get(self, request):
         now = datetime.now()
         if request.query_params.get('time_interval') == 'month':
-            users = [user for user in User.objects.all() if
-                     user.date_joined.month == now.month]
-            return Response(data={'month_interval': len(users)})
+            users = User.objects.filter(date_joined__month=now.month)
+            return Response(data={'in_month': users.count()})
         elif request.query_params.get('time_interval') == 'week':
-            users = [user for user in User.objects.all() if
-                     datetime.date(user.date_joined).strftime("%V") == now.strftime("%V")]
-            return Response(data={'week_interval': len(users)})
+            users = User.objects.filter(date_joined__week=now.strftime("%V"))
+            return Response(data={'in_week': users.count()})
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -112,10 +104,9 @@ class UserGroups(APIView):
 
 class GroupUsersCount(APIView):
     def get(self, request):
-        data = [{'id': group.id,
-                 'user_count': group.user_set.count()}
-                for group in Group.objects.all()]
-        return Response(data=data)
+        groups = Group.objects.prefetch_related('permissions').all().annotate(user_count=Count('user'))
+        serializer = serializers.GroupUserCountSerializer(groups, many=True)
+        return Response(data=serializer.data)
 
 
 class ObtainToken(APIView):
@@ -123,17 +114,20 @@ class ObtainToken(APIView):
         return Response()
 
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = get_object_or_404(queryset=User.objects.all(), username=username)
-        if user.check_password(password):
-            token = Token.objects.get_or_create(user=user)[0]
-            data = {
-                'token': token.key
-            }
-            data.update(UserSerializer(user).data)
-            return Response(data=data)
-        return Response(data={'detail': 'Wrong password!'})
+        request_serializer = serializers.ObtainTokenSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
+
+        # username = request.data.get('username')
+        # password = request.data.get('password')
+        # user = get_object_or_404(queryset=User.objects.all(), username=username)
+        # if user.check_password(password):
+        #     token = Token.objects.get_or_create(user=user)[0]
+        #     data = {
+        #         'token': token.key
+        #     }
+        #     data.update(UserResponseSerializer(user).data)
+        #     return Response(data=data)
+        # return Response(data={'detail': 'Wrong password!'})
 
 
 class VerifyToken(APIView):
@@ -145,7 +139,7 @@ class VerifyToken(APIView):
             data = {
                 'token': request.data.get('token')
             }
-            data.update(UserSerializer(request.user).data)
+            data.update(serializers.UserResponseSerializer(request.user).data)
             return Response(data=data)
         else:
             return Response(data={'token': 'Wrong token'})
