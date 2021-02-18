@@ -5,17 +5,20 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User, Group
 import accounts.serializers as serializers
+import rest_framework.serializers as rest_serializers
+
 from datetime import datetime
 
 
 class UserList(APIView):
     def get(self, request):
         groups_str = request.query_params.get('groups')
-        if groups_str:
+        if groups_str and not groups_str.isdigit():
             users = User.objects.prefetch_related('groups', 'groups__permissions').filter(
                 groups__name__in=groups_str.split(','))
         else:
-            users = User.objects.prefetch_related('groups', 'groups__permissions').all()
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data=rest_serializers.ErrorDetail('Groups must not be empty and number'))
         serializer = serializers.UserResponseSerializer(users, many=True)
         return Response(data=serializer.data)
 
@@ -64,8 +67,7 @@ class CurrentUserDetail(APIView):
 class PasswordReset(APIView):
     def patch(self, request, id):
         user = get_object_or_404(queryset=User.objects.all(), id=id)
-        request.data.update({'user_id': id})
-        serializer = serializers.PasswordResetSerializer(data=request.data)
+        serializer = serializers.PasswordResetSerializer(data=request.data, context={'user_id': user.id})
         serializer.is_valid(raise_exception=True)
         user.set_password(serializer.data.get('new_password'))
         user.save()

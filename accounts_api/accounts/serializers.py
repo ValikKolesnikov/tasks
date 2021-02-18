@@ -7,12 +7,11 @@ import jwt
 
 
 class PasswordResetSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
     def validate_old_password(self, old_password):
-        user = get_object_or_404(queryset=User.objects.all(), id=self.initial_data.get('user_id'))
+        user = get_object_or_404(queryset=User.objects.all(), id=self.context.get('user_id'))
         if not user.check_password(self.initial_data.get('old_password')):
             raise serializers.ValidationError('Wrong password')
 
@@ -75,8 +74,10 @@ class TokenResponseSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data.update({'token': self.context.get('token')})
-        return data
+        return {
+            'user': data,
+            'token': self.context.get('token')
+        }
 
 
 class ObtainTokenSerializer(serializers.Serializer):
