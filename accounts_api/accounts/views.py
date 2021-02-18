@@ -1,15 +1,11 @@
 from django.db.models import Count
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User, Group
 import accounts.serializers as serializers
 from datetime import datetime
-import jwt
-
-from accounts_api.settings import SECRET_KEY
 
 
 class UserList(APIView):
@@ -25,7 +21,8 @@ class UserList(APIView):
 
     def post(self, request):
         request_serializer = serializers.UserRequestSerializer(data=request.data)
-        user = request_serializer.get_user_from_serializer()
+        request_serializer.is_valid(raise_exception=True)
+        user = request_serializer.save()
         response_serializer = serializers.UserResponseSerializer(user)
         return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -38,10 +35,11 @@ class UserDetail(APIView):
 
     def patch(self, request, id):
         user = get_object_or_404(queryset=User.objects.all(), id=id)
-        serializer = serializers.UserResponseSerializer(instance=user, data=request.data, partial=True)
+        serializer = serializers.UserRequestSerializer(instance=user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(data=serializer.data)
+        user = serializer.save()
+        response_serializer = serializers.UserResponseSerializer(user)
+        return Response(data=response_serializer.data)
 
     def delete(self, request, id):
         user = get_object_or_404(queryset=User.objects.all(), id=id)
@@ -100,15 +98,19 @@ class UserRegisteredCount(APIView):
 
 class UserGroups(APIView):
     def get(self, request):
-        groups = Group.objects.filter(user__exact=not None)
-        group_ids = [group.id for group in groups]
+        groups = Group.objects.filter(user__isnull=False).distinct()
+        group_ids = groups.values_list('id', flat=True)
         return Response(data=group_ids)
 
 
 class GroupUsersCount(APIView):
     def get(self, request):
-        groups = Group.objects.prefetch_related('permissions').all().annotate(user_count=Count('user'))
-        serializer = serializers.GroupUserCountSerializer(groups, many=True)
+        groups = Group.objects.all().annotate(user_count=Count('user'))
+        context = {
+            'user_counts': {group.id: group.user_count for group in groups}
+        }
+        serializer = serializers.GroupUserCountSerializer(groups, many=True, context=context)
+
         return Response(data=serializer.data)
 
 
@@ -116,8 +118,9 @@ class ObtainToken(APIView):
     def post(self, request):
         token_serializer = serializers.ObtainTokenSerializer(data=request.data)
         token_serializer.is_valid(raise_exception=True)
-        response_serializer = serializers.TokenResponseSerializer(data=token_serializer.validated_data)
-        response_serializer.is_valid(raise_exception=True)
+        user = token_serializer.validated_data.get('user')
+        token = token_serializer.validated_data.get('token')
+        response_serializer = serializers.TokenResponseSerializer(user, context={'token': token})
         return Response(data=response_serializer.data)
 
 
@@ -125,6 +128,7 @@ class VerifyToken(APIView):
     def post(self, request):
         verify_serializer = serializers.VerifyTokenSerializer(data=request.data)
         verify_serializer.is_valid(raise_exception=True)
-        response_serializer = serializers.TokenResponseSerializer(data=verify_serializer.validated_data)
-        response_serializer.is_valid(raise_exception=True)
+        user = verify_serializer.validated_data.get('user')
+        token = verify_serializer.validated_data.get('token')
+        response_serializer = serializers.TokenResponseSerializer(user, context={'token': token})
         return Response(data=response_serializer.data)

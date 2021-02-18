@@ -2,8 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 from rest_framework.generics import get_object_or_404
 import accounts.services.user_service as user_service
+import accounts.services.token_service as token_service
 import jwt
-from accounts_api.settings import SECRET_KEY
 
 
 class PasswordResetSerializer(serializers.Serializer):
@@ -18,11 +18,14 @@ class PasswordResetSerializer(serializers.Serializer):
 
 
 class GroupUserCountSerializer(serializers.ModelSerializer):
-    user_count = serializers.IntegerField()
-
     class Meta:
         model = Group
-        fields = ('id', 'name', 'permissions', 'user_count')
+        fields = ('id', 'name')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.update({'user_count': self.context.get('user_counts').get(instance.id)})
+        return data
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -38,15 +41,22 @@ class UserRequestSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'email', 'password', 'groups')
 
-    def get_user_from_serializer(self):
-        self.is_valid(raise_exception=True)
-        username, email, password, groups = self.validated_data.values()
-        user = User(username=username,
-                    password=password,
-                    email=email)
+    def create(self, validated_data):
+        username, email, password, groups = validated_data.values()
+        user = user_service.create(username=username,
+                                   email=email,
+                                   password=password,
+                                   groups=groups)
+        return user
 
-        user.save()
-        user.groups.set(groups)
+    def update(self, instance, validated_data):
+        username = validated_data.get('username')
+        email = validated_data.get('email')
+        groups = validated_data.get('groups')
+        user = user_service.update(user=instance,
+                                   username=username,
+                                   email=email,
+                                   groups=groups)
         return user
 
 
@@ -55,32 +65,18 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'groups')
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def create(self, validated_data):
-        username, email, password, _ = validated_data.values()
-        group_ids = self.initial_data['groups']
-        user = user_service.create(username=username,
-                                   email=email,
-                                   password=password,
-                                   group_ids=group_ids)
-        return user
-
-    def update(self, instance, validated_data):
-        username = validated_data.get('username')
-        email = validated_data.get('email')
-        groups_data = self.initial_data.get('groups')
-        user = user_service.update(user=instance,
-                                   username=username,
-                                   email=email,
-                                   groups_data=groups_data)
-        return user
+        fields = ('id', 'username', 'email', 'groups')
 
 
-class TokenResponseSerializer(serializers.Serializer):
-    token = serializers.CharField()
-    username = serializers.CharField()
+class TokenResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email')
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.update({'token': self.context.get('token')})
+        return data
 
 
 class ObtainTokenSerializer(serializers.Serializer):
@@ -88,7 +84,8 @@ class ObtainTokenSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def validate(self, attrs):
-        username, password = attrs.values()
+        username = attrs.get('username')
+        password = attrs.get('password')
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
@@ -96,13 +93,8 @@ class ObtainTokenSerializer(serializers.Serializer):
         if not user.check_password(password):
             raise serializers.ValidationError('Wrong password')
 
-        token_payload = {
-            'user_id': user.id
-        }
-        token = jwt.encode(payload=token_payload,
-                           algorithm='HS256',
-                           key=SECRET_KEY).decode(encoding='utf-8')
-        return {'username': username,
+        token = token_service.get_user_token(user=user)
+        return {'user': user,
                 'token': token
                 }
 
@@ -113,13 +105,10 @@ class VerifyTokenSerializer(serializers.Serializer):
     def validate(self, attrs):
         token = attrs.get('token')
         try:
-            decode_token = jwt.decode(jwt=token,
-                                      algorithms='HS256',
-                                      key=SECRET_KEY)
-            user = get_object_or_404(queryset=User.objects.all(), id=decode_token['user_id'])
+            user = token_service.decode_token(token=token)
         except jwt.DecodeError as error:
             raise serializers.ValidationError(error)
         return {
             'token': token,
-            'username': user.username
+            'user': user
         }
