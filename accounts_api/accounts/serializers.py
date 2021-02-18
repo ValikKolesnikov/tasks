@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 from rest_framework.generics import get_object_or_404
 import accounts.services.user_service as user_service
 import accounts.services.token_service as token_service
@@ -11,23 +11,27 @@ class PasswordResetSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
 
     def validate_old_password(self, old_password):
-        user = get_object_or_404(queryset=User.objects.all(), id=self.context.get('user_id'))
-        if not user.check_password(self.initial_data.get('old_password')):
+        if not self.context.get('user').check_password(self.initial_data.get('old_password')):
             raise serializers.ValidationError('Wrong password')
 
 
 class GroupUserCountSerializer(serializers.ModelSerializer):
+    user_count = serializers.IntegerField()
+
     class Meta:
         model = Group
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'user_count')
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data.update({'user_count': self.context.get('user_counts').get(instance.id)})
-        return data
+
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ('id', 'name')
 
 
 class GroupSerializer(serializers.ModelSerializer):
+    permissions = PermissionSerializer(many=True)
+
     class Meta:
         model = Group
         fields = ('id', 'name', 'permissions')
@@ -41,11 +45,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'password', 'groups')
 
     def create(self, validated_data):
-        username, email, password, groups = validated_data.values()
-        user = user_service.create(username=username,
-                                   email=email,
-                                   password=password,
-                                   groups=groups)
+        user = user_service.create(**validated_data)
         return user
 
     def update(self, instance, validated_data):
@@ -67,17 +67,9 @@ class UserResponseSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'groups')
 
 
-class TokenResponseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email')
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return {
-            'user': data,
-            'token': self.context.get('token')
-        }
+class TokenResponseSerializer(serializers.Serializer):
+    user = UserResponseSerializer()
+    token = serializers.CharField()
 
 
 class ObtainTokenSerializer(serializers.Serializer):

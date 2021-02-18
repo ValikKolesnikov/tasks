@@ -13,12 +13,16 @@ from datetime import datetime
 class UserList(APIView):
     def get(self, request):
         groups_str = request.query_params.get('groups')
-        if groups_str and not groups_str.isdigit():
-            users = User.objects.prefetch_related('groups', 'groups__permissions').filter(
-                groups__name__in=groups_str.split(','))
+        if groups_str:
+            group_names = groups_str.split(',')
+            if not any(group.isdigit() is True for group in group_names):
+                users = User.objects.prefetch_related('groups', 'groups__permissions').filter(
+                    groups__name__in=group_names)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data=rest_serializers.ErrorDetail('Group must not be number'))
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST,
-                            data=rest_serializers.ErrorDetail('Groups must not be empty and number'))
+            users = User.objects.prefetch_related('groups', 'groups__permissions').all()
         serializer = serializers.UserResponseSerializer(users, many=True)
         return Response(data=serializer.data)
 
@@ -67,19 +71,19 @@ class CurrentUserDetail(APIView):
 class PasswordReset(APIView):
     def patch(self, request, id):
         user = get_object_or_404(queryset=User.objects.all(), id=id)
-        serializer = serializers.PasswordResetSerializer(data=request.data, context={'user_id': user.id})
+        serializer = serializers.PasswordResetSerializer(data=request.data, context={'user': user})
         serializer.is_valid(raise_exception=True)
-        user.set_password(serializer.data.get('new_password'))
+        user.set_password(serializer.validated_data.get('new_password'))
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserCount(APIView):
     def get(self, request):
-        if request.query_params.get('only_admin') == 'True':
+        if request.query_params.get('only_admin').lower() == 'true':
             users = User.objects.filter(is_superuser=True)
             return Response(data={'admin_count': users.count()})
-        elif request.query_params.get('only_active') == 'True':
+        elif request.query_params.get('only_active').lower() == 'true':
             users = User.objects.filter(is_active=True)
             return Response(data={'active_count': users.count()})
         else:
@@ -108,11 +112,7 @@ class UserGroups(APIView):
 class GroupUsersCount(APIView):
     def get(self, request):
         groups = Group.objects.all().annotate(user_count=Count('user'))
-        context = {
-            'user_counts': {group.id: group.user_count for group in groups}
-        }
-        serializer = serializers.GroupUserCountSerializer(groups, many=True, context=context)
-
+        serializer = serializers.GroupUserCountSerializer(groups, many=True)
         return Response(data=serializer.data)
 
 
@@ -120,9 +120,11 @@ class ObtainToken(APIView):
     def post(self, request):
         token_serializer = serializers.ObtainTokenSerializer(data=request.data)
         token_serializer.is_valid(raise_exception=True)
-        user = token_serializer.validated_data.get('user')
-        token = token_serializer.validated_data.get('token')
-        response_serializer = serializers.TokenResponseSerializer(user, context={'token': token})
+        data = {
+            'user': token_serializer.validated_data.get('user'),
+            'token': token_serializer.validated_data.get('token')
+        }
+        response_serializer = serializers.TokenResponseSerializer(data)
         return Response(data=response_serializer.data)
 
 
