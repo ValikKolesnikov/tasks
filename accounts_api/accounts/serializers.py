@@ -11,7 +11,7 @@ class PasswordResetSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
 
     def validate_old_password(self, old_password):
-        if not self.context.get('user').check_password(self.initial_data.get('old_password')):
+        if not self.context.get('user').check_password(old_password):
             raise serializers.ValidationError('Wrong password')
 
 
@@ -49,13 +49,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
-        username = validated_data.get('username')
-        email = validated_data.get('email')
-        groups = validated_data.get('groups')
-        user = user_service.update(user=instance,
-                                   username=username,
-                                   email=email,
-                                   groups=groups)
+        user = user_service.update(**validated_data)
         return user
 
 

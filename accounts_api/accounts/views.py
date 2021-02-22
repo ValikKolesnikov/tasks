@@ -6,23 +6,20 @@ from rest_framework.views import APIView
 from django.contrib.auth.models import User, Group
 import accounts.serializers as serializers
 import rest_framework.serializers as rest_serializers
-
+from rest_framework import generics
 from datetime import datetime
+from django_filters import rest_framework as filters
+from accounts.services import user_service
 
 
-class UserList(APIView):
+class UserList(generics.GenericAPIView):
+    serializer_class = serializers.UserRequestSerializer
+    queryset = User.objects.all()
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = user_service.UserGroupFilter
+
     def get(self, request):
-        groups_str = request.query_params.get('groups')
-        if groups_str:
-            group_names = groups_str.split(',')
-            if not any(group.isdigit() is True for group in group_names):
-                users = User.objects.prefetch_related('groups', 'groups__permissions').filter(
-                    groups__name__in=group_names)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data=rest_serializers.ErrorDetail('Group must not be number'))
-        else:
-            users = User.objects.prefetch_related('groups', 'groups__permissions').all()
+        users = self.filter_queryset(self.queryset)
         serializer = serializers.UserResponseSerializer(users, many=True)
         return Response(data=serializer.data)
 

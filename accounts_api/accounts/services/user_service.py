@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+import django_filters
 
 
 def create(username, email, password, groups):
@@ -18,3 +19,11 @@ def update(user, username, email, groups):
     if groups:
         user.groups.set(groups)
     return user
+
+
+class UserGroupFilter(django_filters.FilterSet):
+    group = django_filters.CharFilter(field_name='groups__name')
+
+    class Meta:
+        model = User
+        fields = ['group']
