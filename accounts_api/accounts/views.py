@@ -14,7 +14,7 @@ from accounts.services import user_service
 
 class UserList(generics.GenericAPIView):
     serializer_class = serializers.UserRequestSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.prefetch_related('groups', 'groups__permissions').all()
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = user_service.UserGroupFilter
 
