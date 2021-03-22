@@ -11,17 +11,7 @@ from django_filters import rest_framework as filters
 from accounts.services import user_service
 
 
-class UserList(generics.GenericAPIView):
-    serializer_class = serializers.UserRequestSerializer
-    queryset = User.objects.prefetch_related('groups', 'groups__permissions').all()
-    filter_backends = (filters.DjangoFilterBackend,)
-    filterset_class = user_service.UserGroupFilter
-
-    def get(self, request):
-        users = self.filter_queryset(self.queryset)
-        serializer = serializers.UserResponseSerializer(users, many=True)
-        return Response(data=serializer.data)
-
+class UserPost(APIView):
     def post(self, request):
         request_serializer = serializers.UserRequestSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
@@ -50,13 +40,6 @@ class UserDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class GroupList(APIView):
-    def get(self, request):
-        groups = Group.objects.all()
-        serializer = serializers.GroupSerializer(groups, many=True)
-        return Response(data=serializer.data)
-
-
 class CurrentUserDetail(APIView):
     def get(self, request):
         current_user = request.user
@@ -72,44 +55,6 @@ class PasswordReset(APIView):
         user.set_password(serializer.validated_data.get('new_password'))
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class UserCount(APIView):
-    def get(self, request):
-        if request.query_params.get('only_admin').lower() == 'true':
-            users = User.objects.filter(is_superuser=True)
-            return Response(data={'admin_count': users.count()})
-        elif request.query_params.get('only_active').lower() == 'true':
-            users = User.objects.filter(is_active=True)
-            return Response(data={'active_count': users.count()})
-        else:
-            return Response(data={'users_count': User.objects.count()})
-
-
-class UserRegisteredCount(APIView):
-    def get(self, request):
-        now = datetime.now()
-        if request.query_params.get('time_interval') == 'month':
-            users = User.objects.filter(date_joined__month=now.month)
-            return Response(data={'in_month': users.count()})
-        elif request.query_params.get('time_interval') == 'week':
-            users = User.objects.filter(date_joined__week=now.strftime("%V"))
-            return Response(data={'in_week': users.count()})
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserGroups(APIView):
-    def get(self, request):
-        groups = Group.objects.filter(user__isnull=False).distinct()
-        group_ids = groups.values_list('id', flat=True)
-        return Response(data=group_ids)
-
-
-class GroupUsersCount(APIView):
-    def get(self, request):
-        groups = Group.objects.all().annotate(user_count=Count('user'))
-        serializer = serializers.GroupUserCountSerializer(groups, many=True)
-        return Response(data=serializer.data)
 
 
 class ObtainToken(APIView):

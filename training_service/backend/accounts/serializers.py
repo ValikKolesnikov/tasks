@@ -15,14 +15,6 @@ class PasswordResetSerializer(serializers.Serializer):
             raise serializers.ValidationError('Wrong password')
 
 
-class GroupUserCountSerializer(serializers.ModelSerializer):
-    user_count = serializers.IntegerField()
-
-    class Meta:
-        model = Group
-        fields = ('id', 'name', 'user_count')
-
-
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
@@ -42,7 +34,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'groups')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'groups')
 
     def create(self, validated_data):
         user = user_service.create(**validated_data)
@@ -58,7 +50,7 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'groups')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'groups')
 
 
 class TokenResponseSerializer(serializers.Serializer):
