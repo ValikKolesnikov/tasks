@@ -17,18 +17,23 @@
             b-nav-item
               b-button
                 router-link(to="/sign-up") Sing up
+            b-nav-item
+              b-button
+                router-link(to="/update") Update
     router-view
 </template>
 
 <script>
 import SignUp from './components/SignUp'
 import Login from './components/Login'
+import UpdateUser from './components/UpdateUser'
 
 export default {
   name: 'App',
   components: {
     SignUp,
-    Login
+    Login,
+    UpdateUser
   }
 }
 </script>

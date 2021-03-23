@@ -2,7 +2,7 @@
   <b-container fluid="lg">
     <b-row class="mb-5">
         <b-col sm="4" offset-sm="4">
-            <h1>Registration</h1>
+            <h1>Update User</h1>
         </b-col>
     </b-row>
     <b-form @submit="submitForm">
@@ -31,17 +31,9 @@
             </b-col>
         </b-row>
         <b-row class="mb-2">
-            <b-col class="text-left" sm="2" offset-sm="3"><label>Password:</label></b-col>
-            <b-col sm="4">
-                <b-form-input type="password" v-model="password" required="required"></b-form-input>
-            </b-col>
-        </b-row>
-        <b-row class="mb-2">
             <b-col class="text-left" sm="2" offset-sm="3"><label>Group:</label></b-col>
             <b-col sm="4">
-                <b-form-select v-model="group" required="required">
-                    <b-form-select-option :key="group_item.id" v-for="group_item in this.$store.state.groups" :value="group_item.id">{{ group_item.name }}</b-form-select-option>
-                </b-form-select>
+                <b-form-select v-model="group" :options="options" required="required"></b-form-select>
             </b-col>
         </b-row>
         <b-row>
@@ -61,18 +53,19 @@
 
 <script>
 export default {
-  name: 'SignUp',
-  beforeCreate () {
-    this.$store.dispatch('getGroups')
-  },
+  name: 'UpdateUser',
   data () {
     return {
-      username: '',
-      email: '',
-      firstName: '',
-      lastName: '',
-      password: '',
-      group: null
+      username: this.$store.state.authUser.username,
+      email: this.$store.state.authUser.email,
+      firstName: this.$store.state.authUser.firstName,
+      lastName: this.$store.state.authUser.lastName,
+      group: this.$store.state.authUser.group,
+      options: [
+        {value: null, text: 'Choose you role', disabled: true},
+        {value: 1, text: 'Teacher'},
+        {value: 2, text: 'Student'}
+      ]
     }
   },
   computed: {
@@ -83,17 +76,14 @@ export default {
   methods: {
     submitForm (event) {
       this.errors = []
-      this.createAccount()
+      this.updateUser()
       event.preventDefault()
     },
-    createAccount () {
-      this.$store.dispatch('createUser', {
-        username: this.username,
-        email: this.email,
-        first_name: this.firstName,
-        last_name: this.lastName,
-        password: this.password,
-        groups: [this.group]
+    updateUser () {
+      this.setUserUpdateData()
+      this.$store.dispatch('updateUser', {
+        user: this.$store.state.authUser,
+        data: this.setUserUpdateData()
       }).then(response => {
         this.username = ''
         this.email = ''
@@ -101,11 +91,29 @@ export default {
         this.lastName = ''
         this.password = ''
         this.group = this.options[0]
-        this.$router.push('login')
       })
         .catch(err => {
           this.$store.dispatch('setErrors', err)
         })
+    },
+    setUserUpdateData () {
+      let data = {}
+      if (this.username !== this.$store.state.authUser.username) {
+        data['username'] = this.username
+      }
+      if (this.firstName !== this.$store.state.authUser.firstName) {
+        data['firstName'] = this.firstName
+      }
+      if (this.lastName !== this.$store.state.authUser.lastName) {
+        data['lastName'] = this.lastName
+      }
+      if (this.email !== this.$store.state.authUser.email) {
+        data['email'] = this.email
+      }
+      if (this.group !== this.$store.state.authUser.group) {
+        data['group'] = this.group
+      }
+      return data
     }
   }
 }

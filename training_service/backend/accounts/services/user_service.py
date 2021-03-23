@@ -10,7 +10,7 @@ def create(username, email, first_name, last_name, password, groups):
     return user
 
 
-def update(user, username, first_name, last_name, email, groups):
+def update(user, username=None, first_name=None, last_name=None, email=None, groups=None):
     if username:
         user.username = username
     if email:

@@ -41,7 +41,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
         return user
 
     def update(self, instance, validated_data):
-        user = user_service.update(**validated_data)
+        user = user_service.update(user=instance, **validated_data)
         return user
 
 

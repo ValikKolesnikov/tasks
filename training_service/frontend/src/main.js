@@ -8,6 +8,7 @@ import BootstrapVue from 'bootstrap-vue'
 import Login from '@/components/Login'
 import SignUp from '@/components/SignUp'
 import Home from '@/components/Home'
+import UpdateUser from '@/components/UpdateUser'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
@@ -18,15 +19,23 @@ Vue.config.productionTip = false
 const routes = [
   {
     path: '/',
+    name: 'home',
     component: Home
   },
   {
     path: '/login',
+    name: 'login',
     component: Login
   },
   {
     path: '/sign-up',
+    name: 'sign-up',
     component: SignUp
+  },
+  {
+    path: '/update',
+    name: 'update',
+    component: UpdateUser
   }
 ]
 

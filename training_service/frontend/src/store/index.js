@@ -1,32 +1,54 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { Accounts } from '../api/accounts'
-import { SET_AUTH_USER } from './mutation-types'
+import { SET_AUTH_USER, GET_GROUPS, SET_ERRORS } from './mutation-types'
 
 Vue.use(Vuex)
 
 const state = {
-  authUser: {},
-  isAuth: false,
-  jwt: localStorage.getItem('token')
+  jwt: localStorage.getItem('token'),
+  groups: [],
+  errors: []
 }
 
-const getters = {}
+const getters = {
+  isAuth: state => !!state.jwt
+}
 
 const mutations = {
   [SET_AUTH_USER] (state, { user, token }) {
-    state.authUser = user
-    state.isAuth = true
-    state.jwt = token
+    localStorage.setItem('token', token)
+  },
+  [GET_GROUPS] (state, groups) {
+    console.log(groups)
+    state.groups = groups
+  },
+  [SET_ERRORS] (state, errors) {
+    state.errors = errors
   }
 }
 
 const actions = {
   login ({ commit }, data) {
-    return Accounts.authUser(data).then(response => commit(SET_AUTH_USER, response))
+    return Accounts.authUser(data).then(response => commit(SET_AUTH_USER, response.data))
   },
   createUser ({commit}, data) {
     return Accounts.create(data)
+  },
+  updateUser ({commit}, user, data) {
+    return Accounts.update(user, data)
+  },
+  getGroups ({commit}, groups) {
+    return Accounts.getGroups().then(response => commit(GET_GROUPS, response.data))
+  },
+  setErrors ({commit}, errors) {
+    let errorsData = []
+    for (let key in errors.response.data) {
+      errors.response.data[key].forEach(element => {
+        errorsData = [element, ...errorsData]
+      })
+    }
+    commit(SET_ERRORS, errorsData)
   }
 }
 
