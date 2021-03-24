@@ -20,7 +20,6 @@ const mutations = {
     localStorage.setItem('token', token)
   },
   [GET_GROUPS] (state, groups) {
-    console.log(groups)
     state.groups = groups
   },
   [SET_ERRORS] (state, errors) {
@@ -33,10 +32,15 @@ const actions = {
     return Accounts.authUser(data).then(response => commit(SET_AUTH_USER, response.data))
   },
   createUser ({commit}, data) {
-    return Accounts.create(data)
+    let config = {
+      headers: {
+        'Authorization': 'JTW '.concat(state.jwt)
+      }
+    }
+    return Accounts.create(data, config)
   },
-  updateUser ({commit}, user, data) {
-    return Accounts.update(user, data)
+  updateUser ({commit}, user, data, config) {
+    return Accounts.update(user, data, config)
   },
   getGroups ({commit}, groups) {
     return Accounts.getGroups().then(response => commit(GET_GROUPS, response.data))

@@ -34,6 +34,7 @@
 </template>
 
 <script>
+
 export default {
   name: 'Login',
   data () {
@@ -56,7 +57,8 @@ export default {
       this.$store.dispatch('login', {
         username: this.username,
         password: this.password
-      }).then(response => {})
+      }
+      ).then(response => {})
         .catch(err => {
           this.$store.dispatch('setErrors', err)
         })

@@ -82,7 +82,7 @@ export default {
   },
   methods: {
     submitForm (event) {
-      this.errors = []
+      this.$store.state.errors = []
       this.createAccount()
       event.preventDefault()
     },
@@ -94,7 +94,8 @@ export default {
         last_name: this.lastName,
         password: this.password,
         groups: [this.group]
-      }).then(response => {
+      }
+      ).then(response => {
         this.username = ''
         this.email = ''
         this.firstName = ''

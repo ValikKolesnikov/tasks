@@ -1,14 +1,14 @@
 import {HTTP} from './common'
 
 export const Accounts = {
-  create (config) {
-    return HTTP.post('users/', config)
+  create (data, config) {
+    return HTTP.post('users/', data, config)
   },
-  authUser (config) {
-    return HTTP.post('tokens/obtain/', config)
+  authUser (data) {
+    return HTTP.post('tokens/obtain/', data)
   },
-  update (user, config) {
-    return HTTP.patch(`users/${user.id}`)
+  update (user, data, config) {
+    return HTTP.patch(`users/${user.id}`, data, config)
   },
   getGroups () {
     return HTTP.get('groups/')
