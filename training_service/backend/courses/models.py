@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User, Group, Permission
+from polymorphic.models import PolymorphicModel
 
 
 # Create your models here.
@@ -11,7 +12,15 @@ class Role(models.TextChoices):
 class Course(models.Model):
     name = models.CharField('Name', max_length=300)
     description = models.TextField('Description')
-    users = models.ManyToManyField('User', through='Participation')
+    users = models.ManyToManyField(User, through='Participation')
+
+    def __str__(self):
+        return self.name
+
+
+class Task(PolymorphicModel):
+    position_number = models.IntegerField('Position number')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
 class Participation(models.Model):
@@ -27,17 +36,13 @@ class CourseProgress(models.Model):
     participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
 
 
-class ReadingMaterial(models.Model):
+class ReadingMaterial(Task):
     title = models.CharField('Title', max_length=300)
     text = models.TextField('Text')
-    position_number = models.IntegerField('Position number')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
-class Test(models.Model):
+class Test(Task):
     name = models.CharField('Name', max_length=100)
-    position_number = models.IntegerField('Position number')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 
 class Question(models.Model):
