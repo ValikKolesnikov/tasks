@@ -37,6 +37,9 @@
 
 export default {
   name: 'Login',
+  beforeCreate () {
+    this.$store.state.accounts.errors = []
+  },
   data () {
     return {
       username: '',
@@ -45,7 +48,7 @@ export default {
   },
   computed: {
     errors: function () {
-      return this.$store.state.errors
+      return this.$store.state.accounts.errors
     }
   },
   methods: {
@@ -54,13 +57,13 @@ export default {
       event.preventDefault()
     },
     login () {
-      this.$store.dispatch('login', {
+      this.$store.dispatch('accounts/login', {
         username: this.username,
         password: this.password
       }
       ).then(response => {})
         .catch(err => {
-          this.$store.dispatch('setErrors', err)
+          this.$store.dispatch('accounts/setErrors', err)
         })
     }
   }

@@ -1,39 +1,57 @@
-<template lang="pug">
-  div#app
-    b-container(fluid="lg")
-      b-row
-        b-col(lg=6)
-          b-nav
-            b-nav-item
-              b-button
-                router-link(to="/") Home
-            b-nav-item
-              b-button Course List
-        b-col(lg=3 offset-lg=3)
-          b-nav
-            b-nav-item
-              b-button
-                router-link(to="/login") Log in
-            b-nav-item
-              b-button
-                router-link(to="/sign-up") Sing up
-            b-nav-item
-              b-button
-                router-link(to="/update") Update
-    router-view
+<template>
+  <div id="app">
+    <b-container fluid="lg">
+        <b-row>
+            <b-col lg="6">
+                <b-nav>
+                    <b-nav-item>
+                        <b-button>
+                            <router-link to="/">Home</router-link>
+                        </b-button>
+                    </b-nav-item>
+                    <b-nav-item>
+                        <router-link to="/courses"><b-button>Courses</b-button></router-link>
+                    </b-nav-item>
+                </b-nav>
+            </b-col>
+            <b-col lg="3" offset-lg="3">
+                <b-nav>
+                    <b-nav-item>
+                        <b-button>
+                            <router-link to="/login">Log in</router-link>
+                        </b-button>
+                    </b-nav-item>
+                    <b-nav-item>
+                        <b-button>
+                            <router-link to="/sign-up">Sing up</router-link>
+                        </b-button>
+                    </b-nav-item>
+                    <b-nav-item>
+                        <b-button>
+                            <router-link to="/update">Update</router-link>
+                        </b-button>
+                    </b-nav-item>
+                </b-nav>
+            </b-col>
+        </b-row>
+    </b-container>
+    <router-view></router-view>
+</div>
 </template>
 
 <script>
-import SignUp from './components/SignUp'
-import Login from './components/Login'
-import UpdateUser from './components/UpdateUser'
+import SignUp from './components/accounts/SignUp'
+import Login from './components/accounts/Login'
+import UpdateUser from './components/accounts/UpdateUser'
+import CoursesList from './components/courses/CoursesList'
 
 export default {
   name: 'App',
   components: {
     SignUp,
     Login,
-    UpdateUser
+    UpdateUser,
+    CoursesList
   }
 }
 </script>

@@ -1,27 +1,30 @@
 from django.db import models
 from django.contrib.auth.models import User, Group, Permission
-from courses.enumerations import ROLES
 
 
 # Create your models here.
+class Role(models.TextChoices):
+    TEACHER = 'TH', 'Teacher'
+    STUDENT = 'ST', 'Student'
+
 
 class Course(models.Model):
     name = models.CharField('Name', max_length=300)
     description = models.TextField('Description')
+    users = models.ManyToManyField('User', through='Participation')
 
 
-class CourseProgress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    completion_date = models.DateField('Completion date')
-    is_complete = models.BooleanField('Is complete')
-
-
-class Partition(models.Model):
+class Participation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     enroll_time = models.DateTimeField('Enroll date')
-    role = models.CharField('Role', max_length=2, choices=ROLES)
+    role = models.CharField('Role', max_length=2, choices=Role.choices, default=Role.STUDENT)
+
+
+class CourseProgress(models.Model):
+    completion_date = models.DateField('Completion date')
+    is_complete = models.BooleanField('Is complete')
+    participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
 
 
 class ReadingMaterial(models.Model):

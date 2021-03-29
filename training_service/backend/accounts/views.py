@@ -7,7 +7,7 @@ import accounts.serializers as serializers
 
 class UserViewSet(mixins.CreateModelMixin,
                   mixins.UpdateModelMixin,
-                  mixins.ListModelMixin,
+                  mixins.RetrieveModelMixin,
                   viewsets.GenericViewSet):
     serializer_class = serializers.UserRequestSerializer
     queryset = User.objects.prefetch_related('groups').all()
@@ -18,11 +18,6 @@ class UserViewSet(mixins.CreateModelMixin,
         user = request_serializer.save()
         response_serializer = serializers.UserResponseSerializer(user)
         return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
-
-    def retrieve(self, request, *args, **kwargs):
-        user = self.get_object()
-        serializer = serializers.UserResponseSerializer(user)
-        return Response(data=serializer.data)
 
     def partial_update(self, request, *args, **kwargs):
         user = self.get_object()
@@ -75,7 +70,9 @@ class TokenViewSet(viewsets.GenericViewSet):
     def verify(self, request):
         verify_serializer = serializers.VerifyTokenSerializer(data=request.data)
         verify_serializer.is_valid(raise_exception=True)
-        user = verify_serializer.validated_data.get('user')
-        token = verify_serializer.validated_data.get('token')
-        response_serializer = serializers.TokenResponseSerializer(user, context={'token': token})
+        data = {
+            'user': verify_serializer.validated_data.get('user'),
+            'token': verify_serializer.validated_data.get('token')
+        }
+        response_serializer = serializers.TokenResponseSerializer(data)
         return Response(data=response_serializer.data)

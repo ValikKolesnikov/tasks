@@ -3,12 +3,13 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import App from './App'
-import store from './store'
+import store from './store/index'
 import BootstrapVue from 'bootstrap-vue'
-import Login from '@/components/Login'
-import SignUp from '@/components/SignUp'
+import Login from '@/components/accounts/Login'
+import SignUp from '@/components/accounts/SignUp'
+import CoursesList from '@/components/courses/CoursesList'
 import Home from '@/components/Home'
-import UpdateUser from '@/components/UpdateUser'
+import UpdateUser from '@/components/accounts/UpdateUser'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
@@ -36,6 +37,11 @@ const routes = [
     path: '/update',
     name: 'update',
     component: UpdateUser
+  },
+  {
+    path: '/courses',
+    name: 'coursesList',
+    component: CoursesList
   }
 ]
 
