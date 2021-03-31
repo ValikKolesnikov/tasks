@@ -8,7 +8,7 @@ export const Accounts = {
     return HTTP.post('accounts/tokens/obtain/', data)
   },
   update (user, data, config) {
-    return HTTP.patch(`accounts/users/${user.id}`, data, config)
+    return HTTP.patch(`accounts/users/${user.id}/`, data, config)
   },
   getGroups () {
     return HTTP.get('accounts/groups/')

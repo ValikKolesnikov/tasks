@@ -102,12 +102,12 @@ export default {
         this.firstName = ''
         this.lastName = ''
         this.password = ''
-        this.group = this.options[0]
+        this.group = ''
         this.$router.push('login')
+      }).catch(err => {
+        console.log(err)
+        this.$store.dispatch('accounts/setErrors', err)
       })
-        .catch(err => {
-          this.$store.dispatch('accounts/setErrors', err)
-        })
     }
   }
 }

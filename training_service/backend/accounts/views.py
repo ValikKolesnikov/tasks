@@ -1,8 +1,10 @@
-from rest_framework import status, viewsets, mixins
+from rest_framework import status, viewsets, mixins, generics
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 from django.contrib.auth.models import User, Group
 import accounts.serializers as serializers
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
 
 
 class UserViewSet(mixins.CreateModelMixin,
@@ -11,6 +13,7 @@ class UserViewSet(mixins.CreateModelMixin,
                   viewsets.GenericViewSet):
     serializer_class = serializers.UserRequestSerializer
     queryset = User.objects.prefetch_related('groups').all()
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         request_serializer = self.serializer_class(data=request.data)
@@ -54,21 +57,25 @@ class GroupViewSet(mixins.ListModelMixin,
     queryset = Group.objects.prefetch_related('permissions').all()
 
 
-class TokenViewSet(viewsets.GenericViewSet):
-    @action(methods=['post'], detail=False)
-    def obtain(self, request):
-        token_serializer = serializers.ObtainTokenSerializer(data=request.data)
+class ObtainTokenViewSet(TokenObtainPairView):
+    serializer_class = serializers.ObtainTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        token_serializer = self.serializer_class(data=request.data)
         token_serializer.is_valid(raise_exception=True)
         data = {
             'user': token_serializer.validated_data.get('user'),
-            'token': token_serializer.validated_data.get('token')
+            'token': token_serializer.validated_data.get('access')
         }
         response_serializer = serializers.TokenResponseSerializer(data)
         return Response(data=response_serializer.data)
 
-    @action(methods=['post'], detail=False)
-    def verify(self, request):
-        verify_serializer = serializers.VerifyTokenSerializer(data=request.data)
+
+class VerifyTokenViewSet(TokenVerifyView):
+    serializer_class = serializers.VerifyTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        verify_serializer = self.serializer_class(data=request.data)
         verify_serializer.is_valid(raise_exception=True)
         data = {
             'user': verify_serializer.validated_data.get('user'),

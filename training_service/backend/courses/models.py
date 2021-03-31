@@ -19,8 +19,7 @@ class Course(models.Model):
 
 
 class Task(PolymorphicModel):
-    position_number = models.IntegerField('Position number')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    position_number = models.IntegerField('Position number', unique=True)
 
 
 class Participation(models.Model):
@@ -39,21 +38,35 @@ class CourseProgress(models.Model):
 class ReadingMaterial(Task):
     title = models.CharField('Title', max_length=300)
     text = models.TextField('Text')
+    course = models.ForeignKey(Course, related_name='reading_materials', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.course.name} - {self.title}'
 
 
 class Test(Task):
     name = models.CharField('Name', max_length=100)
+    course = models.ForeignKey(Course, related_name='tests', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.course.name} - {self.name}'
 
 
 class Question(models.Model):
     text = models.CharField('Text', max_length=500)
-    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, related_name='questions', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.test.name} - {self.text}'
 
 
 class Answer(models.Model):
     text = models.CharField('Text', max_length=500)
     is_right = models.BooleanField('Is right')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.question.text} - {self.text}'
 
 
 class ReadingMaterialProgress(models.Model):

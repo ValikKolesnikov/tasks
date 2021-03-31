@@ -34,12 +34,17 @@ const actions = {
   createUser ({commit}, data) {
     let config = {
       headers: {
-        'Authorization': 'JTW '.concat(state.jwt)
+        'Authorization': 'Bearer '.concat(state.jwt)
       }
     }
     return Accounts.create(data, config)
   },
-  updateUser ({commit}, user, data, config) {
+  updateUser ({commit}, {user, data}) {
+    let config = {
+      headers: {
+        'Authorization': 'Bearer '.concat(state.jwt)
+      }
+    }
     return Accounts.update(user, data, config)
   },
   getGroups ({commit}, groups) {

@@ -8,11 +8,21 @@
                 <b-btn>Join</b-btn>
             </b-col>
         </b-row>
+        <b-row class="mt-5">
+          <b-col md=12>
+            <b-link v-on:click="changePage(prev)">
+              <b-icon icon="arrow-left"></b-icon>
+            </b-link>
+            <span>{{current}} of {{total}}</span>
+            <b-link v-on:click="changePage(next)">
+              <b-icon icon="arrow-right"></b-icon>
+            </b-link>
+          </b-col>
+        </b-row>
 </b-container>
 </template>
 
 <script>
-
 export default {
   name: 'CreateCourse',
   beforeCreate () {
@@ -21,6 +31,25 @@ export default {
   computed: {
     courses: function () {
       return this.$store.state.courses.courses
+    },
+    prev: function () {
+      return this.$store.state.courses.prevPage
+    },
+    next: function () {
+      return this.$store.state.courses.nextPage
+    },
+    current: function () {
+      return this.$store.state.courses.currentPage
+    },
+    total: function () {
+      return this.$store.state.courses.totalPages
+    }
+  },
+  methods: {
+    changePage: function (url) {
+      if (url !== null) {
+        this.$store.dispatch('courses/getCourseListPage', url)
+      }
     }
   }
 }

@@ -1,6 +1,10 @@
+from abc import ABC
+
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group, Permission
 from rest_framework.generics import get_object_or_404
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 import accounts.services.user_service as user_service
 import accounts.services.token_service as token_service
 import jwt

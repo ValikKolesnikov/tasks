@@ -63,36 +63,67 @@ export default {
       })
     this.$store.state.accounts.errors = []
   },
+  data () {
+    return {
+      userData: {}
+    }
+  },
   computed: {
     errors: function () {
       return this.$store.state.accounts.errors
     },
-    username: function () {
-      return this.$store.state.accounts.authUser.username
+    username: {
+      get: function () {
+        return this.$store.state.accounts.authUser.username
+      },
+      set: function () {
+        this.userData['username'] = this.username
+      }
     },
-    email: function () {
-      return this.$store.state.accounts.authUser.email
+    email: {
+      get: function () {
+        return this.$store.state.accounts.authUser.email
+      },
+      set: function () {
+        this.userData['email'] = this.email
+      }
     },
-    firstName: function () {
-      return this.$store.state.accounts.authUser.firstName
+    firstName: {
+      get: function () {
+        return this.$store.state.accounts.authUser.first_name
+      },
+      set: function () {
+        this.userData['first_name'] = this.firstName
+      }
     },
-    lastName: function () {
-      return this.$store.state.accounts.authUser.lastName
+    lastName: {
+      get: function () {
+        return this.$store.state.accounts.authUser.last_name
+      },
+      set: function () {
+        this.userData['last_name'] = this.lastName
+      }
     },
-    group: function () {
-      return this.$store.state.accounts.authUser.group
+    group: {
+      get: function () {
+        return this.$store.state.accounts.authUser.group
+      },
+      set: function () {
+        this.userData['groups'] = [this.group]
+      }
     }
   },
   methods: {
     submitForm (event) {
-      this.errors = []
       this.updateUser()
       event.preventDefault()
     },
     updateUser () {
-      this.setUserUpdateData()
+      console.log(this.$store.state.accounts.authUser)
       this.$store.dispatch('accounts/updateUser', {
-        user: this.$store.state.accounts.authUser,
+        user: {
+          id: 1
+        },
         data: this.setUserUpdateData()
       }).then(response => {
         this.username = ''
@@ -103,25 +134,26 @@ export default {
         this.group = this.options[0]
       })
         .catch(err => {
+          console.log(err)
           this.$store.dispatch('accounts/setErrors', err)
         })
     },
     setUserUpdateData () {
       let data = {}
-      if (this.username !== this.$store.state.accounts.authUser.username) {
+      if (this.userData['username'] !== this.$store.state.accounts.authUser.username) {
         data['username'] = this.username
       }
-      if (this.firstName !== this.$store.state.accounts.authUser.firstName) {
-        data['firstName'] = this.firstName
+      if (this.userData['first_name'] !== this.$store.state.accounts.authUser.first_name) {
+        data['first_name'] = this.firstName
       }
-      if (this.lastName !== this.$store.state.accounts.authUser.lastName) {
-        data['lastName'] = this.lastName
+      if (this.userData['last_name'] !== this.$store.state.accounts.authUser.last_name) {
+        data['last_name'] = this.lastName
       }
-      if (this.email !== this.$store.state.accounts.authUser.email) {
+      if (this.userData['email'] !== this.$store.state.accounts.authUser.email) {
         data['email'] = this.email
       }
-      if (this.group !== this.$store.state.accounts.authUser.group) {
-        data['group'] = this.group
+      if (this.userData['groups'] !== this.$store.state.accounts.authUser.group) {
+        data['groups'] = this.group
       }
       return data
     }
