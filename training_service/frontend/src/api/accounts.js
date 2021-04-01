@@ -13,7 +13,7 @@ export const Accounts = {
   getGroups () {
     return HTTP.get('accounts/groups/')
   },
-  getUser (data) {
-    return HTTP.post(`accounts/tokens/verify/`, data)
+  getUser (data, config) {
+    return HTTP.post(`accounts/users/current/`, data, config)
   }
 }

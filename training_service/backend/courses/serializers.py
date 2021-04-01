@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from . import models
+from rest_polymorphic.serializers import PolymorphicSerializer
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -36,13 +37,19 @@ class ReadingMaterialSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'text', 'position_number']
 
 
+class TaskSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        models.ReadingMaterial: ReadingMaterialSerializer,
+        models.Test: TestSerializer
+    }
+
+
 class CourseSerializer(serializers.ModelSerializer):
-    reading_materials = ReadingMaterialSerializer(many=True)
-    tests = TestSerializer(many=True)
+    tasks = TaskSerializer(many=True)
 
     class Meta:
         model = models.Course
-        fields = ['id', 'name', 'description', 'reading_materials', 'tests']
+        fields = ['id', 'name', 'description', 'tasks']
 
 
 class CourseListSerializer(serializers.ModelSerializer):

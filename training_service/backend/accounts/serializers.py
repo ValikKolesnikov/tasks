@@ -1,9 +1,7 @@
-from abc import ABC
-
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group, Permission
-from rest_framework.generics import get_object_or_404
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 import accounts.services.user_service as user_service
 import accounts.services.token_service as token_service
@@ -59,27 +57,25 @@ class UserResponseSerializer(serializers.ModelSerializer):
 
 class TokenResponseSerializer(serializers.Serializer):
     user = UserResponseSerializer()
-    token = serializers.CharField()
+    refresh = serializers.CharField()
+    access = serializers.CharField()
 
 
-class ObtainTokenSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
+class TokenObtainPairSerializer(TokenObtainSerializer):
+    @classmethod
+    def get_token(cls, user):
+        return RefreshToken.for_user(user)
 
     def validate(self, attrs):
-        username = attrs.get('username')
-        password = attrs.get('password')
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            raise serializers.ValidationError('User with this username does not exist')
-        if not user.check_password(password):
-            raise serializers.ValidationError('Wrong password')
+        data = super().validate(attrs)
 
-        token = token_service.get_user_token(user=user)
-        return {'user': user,
-                'token': token
-                }
+        refresh = self.get_token(self.user)
+
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        data['user'] = self.user
+
+        return data
 
 
 class VerifyTokenSerializer(serializers.Serializer):

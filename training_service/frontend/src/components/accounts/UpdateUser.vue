@@ -121,9 +121,7 @@ export default {
     updateUser () {
       console.log(this.$store.state.accounts.authUser)
       this.$store.dispatch('accounts/updateUser', {
-        user: {
-          id: 1
-        },
+        user: this.$store.state.accounts.authUser,
         data: this.setUserUpdateData()
       }).then(response => {
         this.username = ''

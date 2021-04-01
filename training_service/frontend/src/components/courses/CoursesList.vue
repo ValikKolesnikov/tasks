@@ -13,7 +13,7 @@
             <b-link v-on:click="changePage(prev)">
               <b-icon icon="arrow-left"></b-icon>
             </b-link>
-            <span>{{current}} of {{total}}</span>
+            <span>{{current + 1}} of {{total}}</span>
             <b-link v-on:click="changePage(next)">
               <b-icon icon="arrow-right"></b-icon>
             </b-link>

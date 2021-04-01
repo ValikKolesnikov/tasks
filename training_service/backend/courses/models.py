@@ -19,7 +19,11 @@ class Course(models.Model):
 
 
 class Task(PolymorphicModel):
-    position_number = models.IntegerField('Position number', unique=True)
+    class Meta:
+        unique_together = (('course', 'position_number'),)
+
+    position_number = models.IntegerField('Position number')
+    course = models.ForeignKey(Course, related_name='tasks', default=None, on_delete=models.CASCADE)
 
 
 class Participation(models.Model):
@@ -38,7 +42,6 @@ class CourseProgress(models.Model):
 class ReadingMaterial(Task):
     title = models.CharField('Title', max_length=300)
     text = models.TextField('Text')
-    course = models.ForeignKey(Course, related_name='reading_materials', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.course.name} - {self.title}'
@@ -46,7 +49,6 @@ class ReadingMaterial(Task):
 
 class Test(Task):
     name = models.CharField('Name', max_length=100)
-    course = models.ForeignKey(Course, related_name='tests', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.course.name} - {self.name}'

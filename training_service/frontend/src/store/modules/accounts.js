@@ -13,8 +13,8 @@ const getters = {
 }
 
 const mutations = {
-  [SET_AUTH_USER] (state, { user, token }) {
-    localStorage.setItem('token', token)
+  [SET_AUTH_USER] (state, data) {
+    localStorage.setItem('token', data.access)
   },
   [GET_GROUPS] (state, groups) {
     state.groups = groups
@@ -22,7 +22,7 @@ const mutations = {
   [SET_ERRORS] (state, errors) {
     state.errors = errors
   },
-  [GET_USER] (state, { user }) {
+  [GET_USER] (state, user) {
     state.authUser = user
   }
 }
@@ -60,7 +60,12 @@ const actions = {
     commit(SET_ERRORS, errorsData)
   },
   getUser ({commit}, token) {
-    return Accounts.getUser(token).then(response => commit(GET_USER, response.data))
+    let config = {
+      headers: {
+        'Authorization': 'Bearer '.concat(state.jwt)
+      }
+    }
+    return Accounts.getUser(token, config).then(response => commit(GET_USER, response.data))
   }
 }
 

@@ -14,12 +14,12 @@ const getters = {
 }
 
 const mutations = {
-  [SET_COURSES] (state, {links, currentPage, totalPages, results}) {
-    state.courses = results
-    state.nextPage = links.next
-    state.prevPage = links.previous
-    state.totalPages = totalPages
-    state.currentPage = currentPage
+  [SET_COURSES] (state, result) {
+    state.courses = result.results
+    state.nextPage = result.links.next
+    state.prevPage = result.links.previous
+    state.totalPages = result.total_pages
+    state.currentPage = result.current_page
   }
 }
 
