@@ -31,7 +31,7 @@ class Task(PolymorphicModel):
 class Participation(models.Model):
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['id', 'user', 'role'], name='participation_constraint')
+            models.UniqueConstraint(fields=['course', 'user'], name='participation_constraint')
         ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
