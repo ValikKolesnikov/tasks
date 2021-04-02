@@ -85,7 +85,6 @@ export default {
     submitForm (event) {
       this.$store.state.accounts.errors = []
       this.createAccount()
-      event.preventDefault()
     },
     createAccount () {
       this.$store.dispatch('accounts/createUser', {

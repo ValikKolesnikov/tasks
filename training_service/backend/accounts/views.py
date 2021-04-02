@@ -20,7 +20,8 @@ class UserViewSet(viewsets.GenericViewSet):
         response_serializer = serializers.UserResponseSerializer(user)
         return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
 
-    def partial_update(self, request, *args, **kwargs):
+    @action(methods=['patch'], detail=False)
+    def update_user(self, request):
         user = request.user
         serializer = self.serializer_class(instance=user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -33,7 +34,7 @@ class UserViewSet(viewsets.GenericViewSet):
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['patch'], detail=True)
+    @action(methods=['patch'], detail=False)
     def reset_password(self, request):
         user = self.get_object()
         serializer = serializers.PasswordResetSerializer(data=request.data, context={'user': user})
@@ -45,7 +46,6 @@ class UserViewSet(viewsets.GenericViewSet):
     @action(methods=['post'], detail=False)
     def current(self, request):
         current_user = request.user
-        tasks = Task.objects.all()
         serializer = serializers.UserResponseSerializer(current_user)
         return Response(data=serializer.data)
 

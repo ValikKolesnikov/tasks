@@ -39,11 +39,11 @@ class UserRequestSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'groups')
 
     def create(self, validated_data):
-        user = user_service.create(**validated_data)
+        user = user_service.create_user(**validated_data)
         return user
 
     def update(self, instance, validated_data):
-        user = user_service.update(user=instance, **validated_data)
+        user = user_service.update_user(user=instance, **validated_data)
         return user
 
 

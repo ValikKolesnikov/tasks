@@ -76,40 +76,40 @@ export default {
       get: function () {
         return this.$store.state.accounts.authUser.username
       },
-      set: function () {
-        this.userData['username'] = this.username
+      set: function (username) {
+        this.userData['username'] = username
       }
     },
     email: {
       get: function () {
         return this.$store.state.accounts.authUser.email
       },
-      set: function () {
-        this.userData['email'] = this.email
+      set: function (email) {
+        this.userData['email'] = email
       }
     },
     firstName: {
       get: function () {
         return this.$store.state.accounts.authUser.first_name
       },
-      set: function () {
-        this.userData['first_name'] = this.firstName
+      set: function (firstName) {
+        this.userData['first_name'] = firstName
       }
     },
     lastName: {
       get: function () {
         return this.$store.state.accounts.authUser.last_name
       },
-      set: function () {
-        this.userData['last_name'] = this.lastName
+      set: function (lastName) {
+        this.userData['last_name'] = lastName
       }
     },
     group: {
       get: function () {
         return this.$store.state.accounts.authUser.group
       },
-      set: function () {
-        this.userData['groups'] = [this.group]
+      set: function (group) {
+        this.userData['groups'] = [group]
       }
     }
   },
@@ -121,7 +121,6 @@ export default {
     updateUser () {
       console.log(this.$store.state.accounts.authUser)
       this.$store.dispatch('accounts/updateUser', {
-        user: this.$store.state.accounts.authUser,
         data: this.setUserUpdateData()
       }).then(response => {
         this.username = ''
@@ -139,19 +138,19 @@ export default {
     setUserUpdateData () {
       let data = {}
       if (this.userData['username'] !== this.$store.state.accounts.authUser.username) {
-        data['username'] = this.username
+        data['username'] = this.userData['username']
       }
       if (this.userData['first_name'] !== this.$store.state.accounts.authUser.first_name) {
-        data['first_name'] = this.firstName
+        data['first_name'] = this.userData['first_name']
       }
       if (this.userData['last_name'] !== this.$store.state.accounts.authUser.last_name) {
-        data['last_name'] = this.lastName
+        data['last_name'] = this.userData['last_name']
       }
       if (this.userData['email'] !== this.$store.state.accounts.authUser.email) {
-        data['email'] = this.email
+        data['email'] = this.userData['email']
       }
       if (this.userData['groups'] !== this.$store.state.accounts.authUser.group) {
-        data['groups'] = this.group
+        data['groups'] = this.userData['groups']
       }
       return data
     }

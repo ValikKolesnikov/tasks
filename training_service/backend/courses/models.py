@@ -20,13 +20,19 @@ class Course(models.Model):
 
 class Task(PolymorphicModel):
     class Meta:
-        unique_together = (('course', 'position_number'),)
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'position_number'], name='positioning')
+        ]
 
     position_number = models.IntegerField('Position number')
     course = models.ForeignKey(Course, related_name='tasks', default=None, on_delete=models.CASCADE)
 
 
 class Participation(models.Model):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'role'], name='participation_constraint')
+        ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     enroll_time = models.DateTimeField('Enroll date')
@@ -34,7 +40,7 @@ class Participation(models.Model):
 
 
 class CourseProgress(models.Model):
-    completion_date = models.DateField('Completion date')
+    completion_date = models.DateField('Completion date', blank=True, null=True)
     is_complete = models.BooleanField('Is complete')
     participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
 
