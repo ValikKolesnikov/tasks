@@ -34,7 +34,7 @@
             <b-col class="text-left" sm="2" offset-sm="3"><label>Group:</label></b-col>
             <b-col sm="4">
                 <b-form-select v-model="group" required="required">
-                    <b-form-select-option :key="group_item.id" v-for="group_item in this.$store.state.accounts.groups" :value="group_item.id">{{ group_item.name }}</b-form-select-option>
+                    <b-form-select-option v-for="group_item in this.$store.state.accounts.groups" :key="group_item.id" :value="group_item.id">{{ group_item.name }}</b-form-select-option>
                 </b-form-select>
             </b-col>
         </b-row>
@@ -121,6 +121,7 @@ export default {
     updateUser () {
       console.log(this.$store.state.accounts.authUser)
       this.$store.dispatch('accounts/updateUser', {
+        user: this.$store.state.accounts.authUser,
         data: this.setUserUpdateData()
       }).then(response => {
         this.username = ''

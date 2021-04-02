@@ -39,13 +39,13 @@ const actions = {
     }
     return Accounts.create(data, config)
   },
-  updateUser ({commit}, {data}) {
+  updateUser ({commit}, {user, data}) {
     let config = {
       headers: {
         'Authorization': 'Bearer '.concat(state.jwt)
       }
     }
-    return Accounts.update(data, config)
+    return Accounts.update(user, data, config)
   },
   getGroups ({commit}, groups) {
     return Accounts.getGroups().then(response => commit(GET_GROUPS, response.data))
