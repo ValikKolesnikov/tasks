@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from . import models
 from rest_polymorphic.serializers import PolymorphicSerializer
+from django.contrib.auth.models import User
+from accounts.serializers import UserResponseSerializer
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -56,3 +58,21 @@ class CourseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Course
         fields = ['id', 'name', 'description']
+
+
+class ParticipationRequestSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.prefetch_related('groups').all())
+    course = serializers.PrimaryKeyRelatedField(queryset=models.Course.objects.prefetch_related('tasks').all())
+
+    class Meta:
+        model = models.Participation
+        fields = ['id', 'user', 'course', 'role', 'enroll_time']
+
+
+class ParticipationResponseSerializer(serializers.ModelSerializer):
+    user = UserResponseSerializer()
+    course = CourseSerializer()
+
+    class Meta:
+        model = models.Participation
+        fields = ['id', 'user', 'course', 'role', 'enroll_time']
