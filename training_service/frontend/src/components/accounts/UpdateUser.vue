@@ -30,15 +30,6 @@
                 <b-form-input type="text" v-model="lastName" required="required"></b-form-input>
             </b-col>
         </b-row>
-        <b-row class="mb-2">
-            <b-col class="text-left" sm="2" offset-sm="3"><label>Group:</label></b-col>
-            <b-col sm="4">
-                <b-form-select v-model="group" required="required">
-                    <b-form-select-option value="teacher">Teacher</b-form-select-option>
-                    <b-form-select-option value="student">Student</b-form-select-option>
-                </b-form-select>
-            </b-col>
-        </b-row>
         <b-row>
             <b-col sm="4" offset-sm="4">
                 <p class="error" :key="err" v-for="err in errors">{{ err }}</p>
@@ -103,14 +94,6 @@ export default {
       set: function (lastName) {
         this.userData['last_name'] = lastName
       }
-    },
-    group: {
-      get: function () {
-        return this.$store.state.accounts.authUser.group
-      },
-      set: function (group) {
-        this.userData['group'] = group
-      }
     }
   },
   methods: {
@@ -129,7 +112,6 @@ export default {
         this.firstName = ''
         this.lastName = ''
         this.password = ''
-        this.group = this.options[0]
       })
         .catch(err => {
           console.log(err)
@@ -149,9 +131,6 @@ export default {
       }
       if (this.userData['email'] !== this.$store.state.accounts.authUser.email) {
         data['email'] = this.userData['email']
-      }
-      if (this.userData['group'] !== this.$store.state.accounts.authUser.group) {
-        data['group'] = this.userData['group']
       }
       return data
     }
