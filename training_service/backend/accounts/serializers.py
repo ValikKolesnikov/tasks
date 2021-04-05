@@ -32,7 +32,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class UserRequestSerializer(serializers.ModelSerializer):
-    group = serializers.CharField(max_length=50)
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
 
     class Meta:
         model = User

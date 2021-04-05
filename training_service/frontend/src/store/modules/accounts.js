@@ -28,8 +28,11 @@ const actions = {
   login ({ commit }, data) {
     return Accounts.authUser(data).then(response => commit(SET_AUTH_USER, response.data))
   },
-  createUser ({commit}, data) {
-    return Accounts.create(data)
+  createTeacher ({commit}, data) {
+    return Accounts.createTeacher(data)
+  },
+  createStudent ({commit}, data) {
+    return Accounts.createStudent(data)
   },
   updateUser ({commit}, {user, data}) {
     let config = {

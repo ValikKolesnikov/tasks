@@ -14,8 +14,25 @@ class UserViewSet(viewsets.GenericViewSet):
     queryset = User.objects.prefetch_related('groups').all()
     permission_classes = [CurrentUserOrAdminUser]
 
-    def create(self, request, *args, **kwargs):
-        request_serializer = self.serializer_class(data=request.data)
+    @action(methods=['post'], detail=False)
+    def teacher_create(self, request, *args, **kwargs):
+        data = {
+            'group': Group.objects.get_or_create(name='Teacher')[0].id
+        }
+        data.update(request.data)
+        request_serializer = self.serializer_class(data=data)
+        request_serializer.is_valid(raise_exception=True)
+        user = request_serializer.save()
+        response_serializer = serializers.UserResponseSerializer(user)
+        return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['post'], detail=False)
+    def student_create(self, request, *args, **kwargs):
+        data = {
+            'group': Group.objects.get_or_create(name='Student')[0].id
+        }
+        data.update(request.data)
+        request_serializer = self.serializer_class(data=data)
         request_serializer.is_valid(raise_exception=True)
         user = request_serializer.save()
         response_serializer = serializers.UserResponseSerializer(user)

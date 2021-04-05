@@ -1,8 +1,11 @@
 import {HTTP} from './common'
 
 export const Accounts = {
-  create (data) {
-    return HTTP.post('accounts/users/', data)
+  createTeacher (data) {
+    return HTTP.post('accounts/users/teacher_create/', data)
+  },
+  createStudent (data) {
+    return HTTP.post('accounts/users/student_create/', data)
   },
   authUser (data) {
     return HTTP.post('accounts/tokens/obtain/', data)

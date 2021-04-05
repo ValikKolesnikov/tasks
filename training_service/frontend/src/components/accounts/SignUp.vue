@@ -88,15 +88,20 @@ export default {
       event.preventDefault()
     },
     createAccount () {
-      this.$store.dispatch('accounts/createUser', {
+      let data = {
         username: this.username,
         email: this.email,
         first_name: this.firstName,
         last_name: this.lastName,
-        password: this.password,
-        group: this.group
+        password: this.password
       }
-      ).then(response => {
+      let promise = null
+      if (this.group === 'teacher') {
+        promise = this.$store.dispatch('accounts/createTeacher', data)
+      } else if (this.group === 'student') {
+        promise = this.$store.dispatch('accounts/createStudent', data)
+      }
+      promise.then(response => {
         this.username = ''
         this.email = ''
         this.firstName = ''
