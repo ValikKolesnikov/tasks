@@ -34,7 +34,8 @@
             <b-col class="text-left" sm="2" offset-sm="3"><label>Group:</label></b-col>
             <b-col sm="4">
                 <b-form-select v-model="group" required="required">
-                    <b-form-select-option v-for="group_item in this.$store.state.accounts.groups" :key="group_item.id" :value="group_item.id">{{ group_item.name }}</b-form-select-option>
+                    <b-form-select-option value="teacher">Teacher</b-form-select-option>
+                    <b-form-select-option value="student">Student</b-form-select-option>
                 </b-form-select>
             </b-col>
         </b-row>
@@ -57,7 +58,6 @@
 export default {
   name: 'UpdateUser',
   beforeCreate () {
-    this.$store.dispatch('accounts/getGroups')
     this.$store.dispatch('accounts/getUser',
       {token: localStorage.getItem('token')
       })
@@ -109,7 +109,7 @@ export default {
         return this.$store.state.accounts.authUser.group
       },
       set: function (group) {
-        this.userData['groups'] = [group]
+        this.userData['group'] = group
       }
     }
   },
@@ -150,8 +150,8 @@ export default {
       if (this.userData['email'] !== this.$store.state.accounts.authUser.email) {
         data['email'] = this.userData['email']
       }
-      if (this.userData['groups'] !== this.$store.state.accounts.authUser.group) {
-        data['groups'] = this.userData['groups']
+      if (this.userData['group'] !== this.$store.state.accounts.authUser.group) {
+        data['group'] = this.userData['group']
       }
       return data
     }

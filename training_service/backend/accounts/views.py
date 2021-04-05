@@ -6,13 +6,13 @@ from django.contrib.auth.models import User, Group
 import accounts.serializers as serializers
 from courses.models import Task
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
-from .permissions import IsOwner
+from .permissions import CurrentUserOrAdminUser
 
 
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = serializers.UserRequestSerializer
     queryset = User.objects.prefetch_related('groups').all()
-    permission_classes = [IsOwner]
+    permission_classes = [CurrentUserOrAdminUser]
 
     def create(self, request, *args, **kwargs):
         request_serializer = self.serializer_class(data=request.data)
@@ -22,8 +22,7 @@ class UserViewSet(viewsets.GenericViewSet):
         return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
 
     def partial_update(self, request, *args, **kwargs):
-        self.get_object()
-        user = request.user
+        user = self.get_object()
         serializer = self.serializer_class(instance=user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -31,14 +30,13 @@ class UserViewSet(viewsets.GenericViewSet):
         return Response(data=response_serializer.data)
 
     def destroy(self, request, *args, **kwargs):
-        self.get_object()
-        user = request.user
+        user = self.get_object()
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=['patch'], detail=True)
-    def reset_password(self, request):
-        user = request.user
+    def reset_password(self, request, pk):
+        user = self.get_object()
         serializer = serializers.PasswordResetSerializer(data=request.data, context={'user': user})
         serializer.is_valid(raise_exception=True)
         user.set_password(serializer.validated_data.get('new_password'))
