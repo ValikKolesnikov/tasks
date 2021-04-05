@@ -1,11 +1,12 @@
 import { Accounts } from '../../api/accounts'
-import { SET_AUTH_USER, GET_GROUPS, SET_ERRORS, GET_USER } from '../mutation-types'
+import { SET_AUTH_USER, GET_GROUPS, SET_ERRORS, GET_USER, GET_PARTICIPATIONS } from '../mutation-types'
 
 const state = {
   jwt: localStorage.getItem('token'),
   groups: [],
   errors: [],
-  authUser: {}
+  authUser: {},
+  participations: []
 }
 
 const getters = {
@@ -24,6 +25,9 @@ const mutations = {
   },
   [GET_USER] (state, user) {
     state.authUser = user
+  },
+  [GET_PARTICIPATIONS] (state, participations) {
+    state.participations = participations
   }
 }
 
@@ -32,12 +36,7 @@ const actions = {
     return Accounts.authUser(data).then(response => commit(SET_AUTH_USER, response.data))
   },
   createUser ({commit}, data) {
-    let config = {
-      headers: {
-        'Authorization': 'Bearer '.concat(state.jwt)
-      }
-    }
-    return Accounts.create(data, config)
+    return Accounts.create(data)
   },
   updateUser ({commit}, {user, data}) {
     let config = {
@@ -47,7 +46,7 @@ const actions = {
     }
     return Accounts.update(user, data, config)
   },
-  getGroups ({commit}, groups) {
+  getGroups ({commit}) {
     return Accounts.getGroups().then(response => commit(GET_GROUPS, response.data))
   },
   setErrors ({commit}, errors) {
@@ -66,6 +65,14 @@ const actions = {
       }
     }
     return Accounts.getUser(token, config).then(response => commit(GET_USER, response.data))
+  },
+  getParticipations ({commit}, user) {
+    let config = {
+      headers: {
+        'Authorization': 'Bearer '.concat(state.jwt)
+      }
+    }
+    return Accounts.getParticipations(user, config).then(response => commit(GET_PARTICIPATIONS, response.data))
   }
 }
 

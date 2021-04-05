@@ -10,6 +10,7 @@ import SignUp from '@/components/accounts/SignUp'
 import CoursesList from '@/components/courses/CoursesList'
 import Home from '@/components/Home'
 import UpdateUser from '@/components/accounts/UpdateUser'
+import UserPage from '@/components/accounts/UserPage'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
@@ -43,6 +44,11 @@ const routes = [
     path: '/courses',
     name: 'coursesList',
     component: CoursesList
+  },
+  {
+    path: '/user-page',
+    name: 'userPage',
+    component: UserPage
   }
 ]
 

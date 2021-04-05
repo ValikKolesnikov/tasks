@@ -4,9 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes
 from django.contrib.auth.models import User, Group
 import accounts.serializers as serializers
-from courses.models import Task
+from courses.models import Participation
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
 from .permissions import IsOwner
+from courses.serializers import ParticipationResponseSerializer
 
 
 class UserViewSet(viewsets.GenericViewSet):
@@ -49,6 +50,14 @@ class UserViewSet(viewsets.GenericViewSet):
     def current(self, request):
         current_user = request.user
         serializer = serializers.UserResponseSerializer(current_user)
+        return Response(data=serializer.data)
+
+    @action(methods=['get'], detail=True)
+    def participation_list(self, request, pk):
+        self.get_object()
+        user = request.user
+        participation_list = Participation.objects.filter(user=user)
+        serializer = ParticipationResponseSerializer(participation_list, many=True)
         return Response(data=serializer.data)
 
 
