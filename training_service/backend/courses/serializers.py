@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import serializers
 from . import models
 from rest_polymorphic.serializers import PolymorphicSerializer
@@ -46,6 +48,21 @@ class TaskSerializer(PolymorphicSerializer):
     }
 
 
+class TaskResponseSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        models.ReadingMaterial: ReadingMaterialSerializer,
+        models.Test: TestResponseSerializer
+    }
+
+
+class CourseDetailSerializer(serializers.ModelSerializer):
+    tasks = TaskResponseSerializer(many=True)
+
+    class Meta:
+        model = models.Course
+        fields = ['id', 'name', 'description', 'tasks']
+
+
 class CourseSerializer(serializers.ModelSerializer):
     tasks = TaskSerializer(many=True)
 
@@ -66,6 +83,7 @@ class ParticipationRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Participation
+        extra_kwargs = {'enroll_time': {'allow_null': True}}
         fields = ['id', 'user', 'course', 'role', 'enroll_time']
 
 

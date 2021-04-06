@@ -39,12 +39,7 @@ const actions = {
     return Accounts.create(data)
   },
   updateUser ({commit}, {user, data}) {
-    let config = {
-      headers: {
-        'Authorization': 'Bearer '.concat(state.jwt)
-      }
-    }
-    return Accounts.update(user, data, config)
+    return Accounts.update(user, data)
   },
   getGroups ({commit}) {
     return Accounts.getGroups().then(response => commit(GET_GROUPS, response.data))
@@ -59,28 +54,13 @@ const actions = {
     commit(SET_ERRORS, errorsData)
   },
   getUser ({commit}, token) {
-    let config = {
-      headers: {
-        'Authorization': 'Bearer '.concat(state.jwt)
-      }
-    }
-    return Accounts.getUser(token, config).then(response => commit(GET_USER, response.data))
+    return Accounts.getUser(token).then(response => commit(GET_USER, response.data))
   },
   getParticipations ({commit}, user) {
-    let config = {
-      headers: {
-        'Authorization': 'Bearer '.concat(state.jwt)
-      }
-    }
-    return Accounts.getParticipations(user, config).then(response => commit(GET_PARTICIPATIONS, response.data))
+    return Accounts.getParticipations(user).then(response => commit(GET_PARTICIPATIONS, response.data))
   },
   participate ({commit}, courseId) {
-    let config = {
-      headers: {
-        'Authorization': 'Bearer '.concat(state.jwt)
-      }
-    }
-    return Accounts.participate(courseId, config)
+    return Accounts.participate(courseId)
   }
 }
 

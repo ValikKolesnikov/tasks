@@ -52,10 +52,14 @@ class UserViewSet(viewsets.GenericViewSet):
         serializer = serializers.UserResponseSerializer(current_user)
         return Response(data=serializer.data)
 
+
+class ParticipationViewSet(viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    serializer_class = ParticipationResponseSerializer
+
     @action(methods=['get'], detail=True)
     def participation_list(self, request, pk):
-        self.get_object()
-        user = request.user
+        user = self.get_object()
         participation_list = Participation.objects.filter(user=user)
         serializer = ParticipationResponseSerializer(participation_list, many=True)
         return Response(data=serializer.data)

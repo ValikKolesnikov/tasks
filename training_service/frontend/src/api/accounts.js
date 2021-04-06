@@ -1,4 +1,4 @@
-import {HTTP} from './common'
+import HTTP from './common'
 
 export const Accounts = {
   create (data) {

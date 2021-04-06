@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.contrib.auth.models import User, Group, Permission
 from polymorphic.models import PolymorphicModel
@@ -33,10 +35,14 @@ class Participation(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['course', 'user'], name='participation_constraint')
         ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    enroll_time = models.DateTimeField('Enroll date')
+    enroll_time = models.DateTimeField('Enroll date', auto_now_add=True)
     role = models.CharField('Role', max_length=2, choices=Role.choices, default=Role.STUDENT)
+
+    def __str__(self):
+        return f'{self.user} - {self.course}'
 
 
 class CourseProgress(models.Model):
