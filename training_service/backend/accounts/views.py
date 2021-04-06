@@ -12,7 +12,11 @@ from .permissions import CurrentUserOrAdminUser
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = serializers.UserRequestSerializer
     queryset = User.objects.prefetch_related('groups').all()
-    permission_classes = [CurrentUserOrAdminUser]
+
+    def get_permissions(self):
+        if self.action != 'teacher_create' or self.action != 'student_create':
+            self.permission_classes = [CurrentUserOrAdminUser]
+        return super().get_permissions()
 
     @action(methods=['post'], detail=False)
     def teacher_create(self, request, *args, **kwargs):
