@@ -73,6 +73,14 @@ const actions = {
       }
     }
     return Accounts.getParticipations(user, config).then(response => commit(GET_PARTICIPATIONS, response.data))
+  },
+  participate ({commit}, courseId) {
+    let config = {
+      headers: {
+        'Authorization': 'Bearer '.concat(state.jwt)
+      }
+    }
+    return Accounts.participate(courseId, config)
   }
 }
 

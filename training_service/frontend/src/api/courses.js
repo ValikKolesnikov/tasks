@@ -9,5 +9,8 @@ export const Courses = {
   },
   getList () {
     return HTTP.get(`courses/`)
+  },
+  getCourse (id) {
+    return HTTP.get(`courses/${id}/`)
   }
 }

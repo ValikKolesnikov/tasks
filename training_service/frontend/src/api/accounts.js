@@ -18,5 +18,8 @@ export const Accounts = {
   },
   getParticipations (user, config) {
     return HTTP.get(`accounts/users/${user.id}/participation_list/`, config)
+  },
+  participate (courseId, config) {
+    return HTTP.post(`courses/${courseId}/participate/`, {}, config)
   }
 }
