@@ -10,7 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from .services import participation_service
 
 
-class CourseViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class CourseViewSet(mixins.ListModelMixin,
+                    viewsets.GenericViewSet):
     queryset = Course.objects.prefetch_related('tasks').all()
     serializer_class = serializers.CourseListSerializer
     pagination_class = CourseListPagination
@@ -32,6 +33,3 @@ class CourseViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         serializer = serializers.CourseSerializer(course)
         return Response(data=serializer.data)
 
-    @action(methods=['post'], detail=True)
-    def detail(self, request, pk):
-        course = self.get_object()

@@ -10,3 +10,11 @@ class IsOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return request.user == obj
+
+
+class CurrentUserIdOrAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user_id = request.query_params.get('user_id')
+        if user_id:
+            return request.user.id == int(user_id) or request.user.is_staff
+        return request.user.is_staff
