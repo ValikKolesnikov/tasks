@@ -83,7 +83,6 @@ class ParticipationRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Participation
-        extra_kwargs = {'enroll_time': {'allow_null': True}}
         fields = ['id', 'user', 'course', 'role', 'enroll_time']
 
 

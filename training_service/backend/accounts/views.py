@@ -8,7 +8,7 @@ from courses.models import Participation
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
 from .permissions import CurrentUserOrAdminUser
 from courses.serializers import ParticipationResponseSerializer
-
+from .filters import ParticipationFilter
 
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = serializers.UserRequestSerializer
@@ -54,11 +54,12 @@ class UserViewSet(viewsets.GenericViewSet):
 
 
 class ParticipationViewSet(viewsets.GenericViewSet):
-    queryset = Participation.objects.all()
+    queryset = Participation.objects.prefetch_related('course', 'user').all()
     serializer_class = ParticipationResponseSerializer
+    filter_backends = [ParticipationFilter]
 
     def list(self, request, *args, **kwargs):
-        participation_list = self.queryset.filter(user=request.user)
+        participation_list = self.filter_queryset(self.get_queryset())
         serializer = ParticipationResponseSerializer(participation_list, many=True)
         return Response(data=serializer.data)
 
