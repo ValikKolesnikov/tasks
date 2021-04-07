@@ -6,15 +6,14 @@ from django.contrib.auth.models import User, Group
 import accounts.serializers as serializers
 from courses.models import Participation
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
-from .permissions import IsOwner, CurrentUserIdOrAdmin
+from .permissions import CurrentUserOrAdminUser
 from courses.serializers import ParticipationResponseSerializer
-from .filters import ParticipationListFilterBackend
 
 
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = serializers.UserRequestSerializer
     queryset = User.objects.prefetch_related('groups').all()
-    permission_classes = [IsOwner]
+    permission_classes = [CurrentUserOrAdminUser]
 
     def create(self, request, *args, **kwargs):
         request_serializer = self.serializer_class(data=request.data)
@@ -57,11 +56,9 @@ class UserViewSet(viewsets.GenericViewSet):
 class ParticipationViewSet(viewsets.GenericViewSet):
     queryset = Participation.objects.all()
     serializer_class = ParticipationResponseSerializer
-    filter_backends = [ParticipationListFilterBackend]
-    permission_classes = [CurrentUserIdOrAdmin]
 
     def list(self, request, *args, **kwargs):
-        participation_list = self.filter_queryset(self.queryset)
+        participation_list = self.queryset.filter(user=request.user)
         serializer = ParticipationResponseSerializer(participation_list, many=True)
         return Response(data=serializer.data)
 

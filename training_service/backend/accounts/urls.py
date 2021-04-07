@@ -5,7 +5,7 @@ from rest_framework_simplejwt import views as jwt_views
 
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='users')
-router.register(r'participation', views.ParticipationViewSet, basename='users_participation')
+router.register(r'participations', views.ParticipationViewSet, basename='users_participation')
 router.register(r'groups', views.GroupViewSet, basename='groups')
 
 urlpatterns = [

@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: 'CreateCourse',
+  name: 'CourseClassRoom',
   beforeCreate () {
     this.$store.dispatch('courses/getList')
   },
