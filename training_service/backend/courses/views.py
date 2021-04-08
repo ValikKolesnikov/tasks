@@ -9,6 +9,7 @@ from datetime import datetime
 from rest_framework.permissions import IsAuthenticated
 from .services import participation_service
 from django.forms.models import model_to_dict
+from django.db import IntegrityError
 
 
 class CourseViewSet(mixins.ListModelMixin,
@@ -19,16 +20,16 @@ class CourseViewSet(mixins.ListModelMixin,
     permission_classes = [IsAuthenticated]
 
     @action(methods=['post'], detail=True)
-    def participate(self, request, pk):
+    def enroll_as_student(self, request, pk):
         course = self.get_object()
         user = request.user
-        participation = participation_service.enroll_as_student(user=user, course=course)
-        data = model_to_dict(participation, fields=['id', 'user', 'course', 'role', 'enroll_time'])
-        participation_serializer = serializers.ParticipationRequestSerializer(data=data)
-        participation_serializer.is_valid(raise_exception=True)
-        participation = participation_serializer.save()
+        participation = None
+        try:
+            participation = participation_service.enroll_as_student(user=user, course=course)
+        except IntegrityError:
+            return Response(data='You already enrolled in this course', status=status.HTTP_400_BAD_REQUEST)
         response_serializer = serializers.ParticipationResponseSerializer(participation)
-        return Response(data=response_serializer.data)
+        return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, *args, **kwargs):
         course = self.get_object()
