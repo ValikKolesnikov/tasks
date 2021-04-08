@@ -8,6 +8,7 @@ from .models import Course, ReadingMaterial, Participation, Role
 from datetime import datetime
 from rest_framework.permissions import IsAuthenticated
 from .services import participation_service
+from django.forms.models import model_to_dict
 
 
 class CourseViewSet(mixins.ListModelMixin,
@@ -22,6 +23,10 @@ class CourseViewSet(mixins.ListModelMixin,
         course = self.get_object()
         user = request.user
         participation = participation_service.enroll_as_student(user=user, course=course)
+        data = model_to_dict(participation, fields=['id', 'user', 'course', 'role', 'enroll_time'])
+        participation_serializer = serializers.ParticipationRequestSerializer(data=data)
+        participation_serializer.is_valid(raise_exception=True)
+        participation = participation_serializer.save()
         response_serializer = serializers.ParticipationResponseSerializer(participation)
         return Response(data=response_serializer.data)
 
@@ -29,4 +34,3 @@ class CourseViewSet(mixins.ListModelMixin,
         course = self.get_object()
         serializer = serializers.CourseSerializer(course)
         return Response(data=serializer.data)
-

@@ -57,8 +57,12 @@ class ParticipationViewSet(viewsets.GenericViewSet):
     queryset = Participation.objects.prefetch_related('course', 'user').all()
     serializer_class = ParticipationResponseSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(user=self.request.user)
+
     def list(self, request, *args, **kwargs):
-        participation_list = self.get_queryset().filter(user=request.user)
+        participation_list = self.get_queryset()
         serializer = ParticipationResponseSerializer(participation_list, many=True)
         return Response(data=serializer.data)
 
