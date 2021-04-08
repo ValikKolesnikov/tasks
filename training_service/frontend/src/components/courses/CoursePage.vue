@@ -41,7 +41,7 @@ export default {
   },
   methods: {
     participate: function () {
-      this.$store.dispatch('accounts/participate', this.$route.params.id)
+      this.$store.dispatch('accounts/enrollAsStudent', this.$route.params.id)
     }
   }
 }

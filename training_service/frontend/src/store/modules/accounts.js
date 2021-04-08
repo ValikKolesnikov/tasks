@@ -59,8 +59,8 @@ const actions = {
   getParticipations ({commit}, user) {
     return Accounts.getParticipations(user).then(response => commit(GET_PARTICIPATIONS, response.data))
   },
-  participate ({commit}, courseId) {
-    return Accounts.participate(courseId)
+  enrollAsStudent ({commit}, courseId) {
+    return Accounts.enrollAsStudent(courseId)
   }
 }
 
