@@ -1,6 +1,7 @@
-import {HTTP} from './common'
+import HTTP from './common'
 
 export const Accounts = {
+
   createTeacher (data) {
     return HTTP.post('accounts/users/teacher_create/', data)
   },
@@ -15,5 +16,11 @@ export const Accounts = {
   },
   getUser (data, config) {
     return HTTP.post(`accounts/users/current/`, data, config)
+  },
+  getParticipations (user, config) {
+    return HTTP.get(`accounts/users/${user.id}/participation_list/`, config)
+  },
+  enrollAsStudent (courseId, config) {
+    return HTTP.post(`courses/${courseId}/enroll_as_student/`, {}, config)
   }
 }

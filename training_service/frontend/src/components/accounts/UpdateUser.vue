@@ -102,7 +102,6 @@ export default {
       event.preventDefault()
     },
     updateUser () {
-      console.log(this.$store.state.accounts.authUser)
       this.$store.dispatch('accounts/updateUser', {
         user: this.$store.state.accounts.authUser,
         data: this.setUserUpdateData()
@@ -114,7 +113,6 @@ export default {
         this.password = ''
       })
         .catch(err => {
-          console.log(err)
           this.$store.dispatch('accounts/setErrors', err)
         })
     },
