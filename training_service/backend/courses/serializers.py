@@ -1,10 +1,9 @@
-from datetime import datetime
-
-from rest_framework import serializers
-from . import models
-from rest_polymorphic.serializers import PolymorphicSerializer
 from django.contrib.auth.models import User
+from rest_framework import serializers
+from rest_polymorphic.serializers import PolymorphicSerializer
+
 from accounts.serializers import UserResponseSerializer
+from . import models
 
 
 class AnswerSerializer(serializers.ModelSerializer):

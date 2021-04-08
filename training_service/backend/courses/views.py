@@ -1,15 +1,13 @@
-from rest_framework import status, viewsets, mixins
-from .pagination import CourseListPagination
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.contrib.auth.models import User, Group
-import courses.serializers as serializers
-from .models import Course, ReadingMaterial, Participation, Role
-from datetime import datetime
-from rest_framework.permissions import IsAuthenticated
-from .services import participation_service
-from django.forms.models import model_to_dict
 from django.db import IntegrityError
+from rest_framework import status, viewsets, mixins
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+import courses.serializers as serializers
+from .models import Course
+from .pagination import CourseListPagination
+from .services import participation_service
 
 
 class CourseViewSet(mixins.ListModelMixin,

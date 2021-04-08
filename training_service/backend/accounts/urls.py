@@ -1,7 +1,8 @@
-from django.urls import path, re_path
-from . import views
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt import views as jwt_views
+
+from . import views
 
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='users')

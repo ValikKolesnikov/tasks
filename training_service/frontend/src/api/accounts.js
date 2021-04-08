@@ -18,7 +18,7 @@ export const Accounts = {
     return HTTP.post(`accounts/users/current/`, data, config)
   },
   getParticipations (user, config) {
-    return HTTP.get(`accounts/users/${user.id}/participation_list/`, config)
+    return HTTP.get(`accounts/participations/`, config)
   },
   enrollAsStudent (courseId, config) {
     return HTTP.post(`courses/${courseId}/enroll_as_student/`, {}, config)

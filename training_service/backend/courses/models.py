@@ -1,11 +1,8 @@
-from datetime import datetime
-
-from django.db import models
 from django.contrib.auth.models import User, Group, Permission
+from django.db import models
 from polymorphic.models import PolymorphicModel
 
 
-# Create your models here.
 class Role(models.TextChoices):
     TEACHER = 'TH', 'Teacher'
     STUDENT = 'ST', 'Student'

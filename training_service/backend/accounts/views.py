@@ -1,21 +1,19 @@
-from rest_framework import status, viewsets, mixins, generics
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.decorators import action, permission_classes
 from django.contrib.auth.models import User, Group
+from rest_framework import status, viewsets, mixins
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
+
 import accounts.serializers as serializers
 from courses.models import Participation
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
-from .permissions import CurrentUserOrAdminUser
 from courses.serializers import ParticipationResponseSerializer
-
+from .permissions import CurrentUserOrAdminUser
 
 
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = serializers.UserRequestSerializer
     queryset = User.objects.prefetch_related('groups').all()
     permission_classes = [CurrentUserOrAdminUser]
-
 
     def get_permissions(self):
         if self.action != 'teacher_create' or self.action != 'student_create':

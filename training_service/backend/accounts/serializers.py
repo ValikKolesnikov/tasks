@@ -1,11 +1,11 @@
-from rest_framework import serializers
+import jwt
 from django.contrib.auth.models import User, Group, Permission
+from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-import accounts.services.user_service as user_service
 import accounts.services.token_service as token_service
-import jwt
+import accounts.services.user_service as user_service
 
 
 class PasswordResetSerializer(serializers.Serializer):
