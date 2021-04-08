@@ -32,11 +32,11 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class UserRequestSerializer(serializers.ModelSerializer):
-    groups = serializers.PrimaryKeyRelatedField(many=True, queryset=Group.objects.all())
+    group = serializers.PrimaryKeyRelatedField(queryset=Group.objects.all())
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'groups')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password', 'group')
 
     def create(self, validated_data):
         user = user_service.create_user(**validated_data)

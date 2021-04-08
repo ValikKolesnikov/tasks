@@ -30,14 +30,6 @@
                 <b-form-input type="text" v-model="lastName" required="required"></b-form-input>
             </b-col>
         </b-row>
-        <b-row class="mb-2">
-            <b-col class="text-left" sm="2" offset-sm="3"><label>Group:</label></b-col>
-            <b-col sm="4">
-                <b-form-select v-model="group" required="required">
-                    <b-form-select-option v-for="group_item in this.$store.state.accounts.groups" :key="group_item.id" :value="group_item.id">{{ group_item.name }}</b-form-select-option>
-                </b-form-select>
-            </b-col>
-        </b-row>
         <b-row>
             <b-col sm="4" offset-sm="4">
                 <p class="error" :key="err" v-for="err in errors">{{ err }}</p>
@@ -57,7 +49,6 @@
 export default {
   name: 'UpdateUser',
   beforeCreate () {
-    this.$store.dispatch('accounts/getGroups')
     this.$store.dispatch('accounts/getUser',
       {token: localStorage.getItem('token')
       })
@@ -103,14 +94,6 @@ export default {
       set: function (lastName) {
         this.userData['last_name'] = lastName
       }
-    },
-    group: {
-      get: function () {
-        return this.$store.state.accounts.authUser.group
-      },
-      set: function (group) {
-        this.userData['groups'] = [group]
-      }
     }
   },
   methods: {
@@ -128,7 +111,6 @@ export default {
         this.firstName = ''
         this.lastName = ''
         this.password = ''
-        this.group = this.options[0]
       })
         .catch(err => {
           this.$store.dispatch('accounts/setErrors', err)
@@ -147,9 +129,6 @@ export default {
       }
       if (this.userData['email'] !== this.$store.state.accounts.authUser.email) {
         data['email'] = this.userData['email']
-      }
-      if (this.userData['groups'] !== this.$store.state.accounts.authUser.group) {
-        data['groups'] = this.userData['groups']
       }
       return data
     }

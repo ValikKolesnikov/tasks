@@ -40,7 +40,8 @@
             <b-col class="text-left" sm="2" offset-sm="3"><label>Group:</label></b-col>
             <b-col sm="4">
                 <b-form-select v-model="group" required="required">
-                    <b-form-select-option :key="group_item.id" v-for="group_item in this.$store.state.accounts.groups" :value="group_item.id">{{ group_item.name }}</b-form-select-option>
+                    <b-form-select-option value="teacher">Teacher</b-form-select-option>
+                    <b-form-select-option value="student">Student</b-form-select-option>
                 </b-form-select>
             </b-col>
         </b-row>
@@ -64,7 +65,6 @@ export default {
   name: 'SignUp',
   beforeCreate () {
     this.$store.state.accounts.errors = []
-    this.$store.dispatch('accounts/getGroups')
   },
   data () {
     return {
@@ -73,7 +73,7 @@ export default {
       firstName: '',
       lastName: '',
       password: '',
-      group: null
+      group: ''
     }
   },
   computed: {
@@ -88,15 +88,20 @@ export default {
       event.preventDefault()
     },
     createAccount () {
-      this.$store.dispatch('accounts/createUser', {
+      let data = {
         username: this.username,
         email: this.email,
         first_name: this.firstName,
         last_name: this.lastName,
-        password: this.password,
-        groups: [this.group]
+        password: this.password
       }
-      ).then(response => {
+      let promise = null
+      if (this.group === 'teacher') {
+        promise = this.$store.dispatch('accounts/createTeacher', data)
+      } else if (this.group === 'student') {
+        promise = this.$store.dispatch('accounts/createStudent', data)
+      }
+      promise.then(response => {
         this.username = ''
         this.email = ''
         this.firstName = ''

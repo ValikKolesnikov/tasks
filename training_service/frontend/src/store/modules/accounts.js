@@ -1,5 +1,5 @@
 import { Accounts } from '../../api/accounts'
-import { SET_AUTH_USER, GET_GROUPS, SET_ERRORS, GET_USER, GET_PARTICIPATIONS } from '../mutation-types'
+import { SET_AUTH_USER, SET_ERRORS, GET_USER, GET_PARTICIPATIONS } from '../mutation-types'
 
 const state = {
   jwt: localStorage.getItem('token'),
@@ -17,9 +17,6 @@ const mutations = {
   [SET_AUTH_USER] (state, data) {
     localStorage.setItem('token', data.access)
   },
-  [GET_GROUPS] (state, groups) {
-    state.groups = groups
-  },
   [SET_ERRORS] (state, errors) {
     state.errors = errors
   },
@@ -35,14 +32,14 @@ const actions = {
   login ({ commit }, data) {
     return Accounts.authUser(data).then(response => commit(SET_AUTH_USER, response.data))
   },
-  createUser ({commit}, data) {
-    return Accounts.create(data)
+  createTeacher ({commit}, data) {
+    return Accounts.createTeacher(data)
+  },
+  createStudent ({commit}, data) {
+    return Accounts.createStudent(data)
   },
   updateUser ({commit}, {user, data}) {
     return Accounts.update(user, data)
-  },
-  getGroups ({commit}) {
-    return Accounts.getGroups().then(response => commit(GET_GROUPS, response.data))
   },
   setErrors ({commit}, errors) {
     let errorsData = []
