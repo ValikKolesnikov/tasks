@@ -1,4 +1,4 @@
-import {HTTP} from './common'
+import HTTP from './common'
 
 export const Courses = {
   create (data, config) {
@@ -9,5 +9,8 @@ export const Courses = {
   },
   getList () {
     return HTTP.get(`courses/`)
+  },
+  getCourse (id) {
+    return HTTP.get(`courses/${id}/`)
   }
 }

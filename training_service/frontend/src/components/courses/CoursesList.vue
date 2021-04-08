@@ -1,11 +1,8 @@
 <template>
   <b-container fluid="lg">
         <b-row v-for="course in courses" v-bind:key="course.id">
-            <b-col md=3>
-                {{course.name}}
-            </b-col>
-            <b-col md=2>
-                <b-btn>Join</b-btn>
+            <b-col class="course-block" md=6 offset-md="3">
+              <router-link :to="{name: 'coursePage', params: {id: course.id}}">{{course.name}}</router-link>
             </b-col>
         </b-row>
         <b-row class="mt-5">
@@ -57,5 +54,9 @@ export default {
 </script>
 
 <style scoped>
-
+.course-block {
+  border-bottom: 1px solid rgba(0,0,0, 0.3);
+  padding: 10px;
+  font-size: 18px;
+}
 </style>

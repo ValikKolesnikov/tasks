@@ -4,14 +4,18 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes
 from django.contrib.auth.models import User, Group
 import accounts.serializers as serializers
-from courses.models import Task
+from courses.models import Participation
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView
 from .permissions import CurrentUserOrAdminUser
+from courses.serializers import ParticipationResponseSerializer
+
 
 
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = serializers.UserRequestSerializer
     queryset = User.objects.prefetch_related('groups').all()
+    permission_classes = [CurrentUserOrAdminUser]
+
 
     def get_permissions(self):
         if self.action != 'teacher_create' or self.action != 'student_create':
@@ -68,6 +72,20 @@ class UserViewSet(viewsets.GenericViewSet):
     def current(self, request):
         current_user = request.user
         serializer = serializers.UserResponseSerializer(current_user)
+        return Response(data=serializer.data)
+
+
+class ParticipationViewSet(viewsets.GenericViewSet):
+    queryset = Participation.objects.prefetch_related('course', 'user').all()
+    serializer_class = ParticipationResponseSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        participation_list = self.get_queryset()
+        serializer = ParticipationResponseSerializer(participation_list, many=True)
         return Response(data=serializer.data)
 
 

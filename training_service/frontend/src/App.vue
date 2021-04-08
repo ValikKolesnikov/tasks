@@ -31,6 +31,11 @@
                             <router-link to="/update">Update</router-link>
                         </b-button>
                     </b-nav-item>
+                    <b-nav-item>
+                        <b-button>
+                            <router-link to="/user-page">User page</router-link>
+                        </b-button>
+                    </b-nav-item>
                 </b-nav>
             </b-col>
         </b-row>
@@ -44,6 +49,7 @@ import SignUp from './components/accounts/SignUp'
 import Login from './components/accounts/Login'
 import UpdateUser from './components/accounts/UpdateUser'
 import CoursesList from './components/courses/CoursesList'
+import UserPage from './components/accounts/UserPage'
 
 export default {
   name: 'App',
@@ -51,7 +57,8 @@ export default {
     SignUp,
     Login,
     UpdateUser,
-    CoursesList
+    CoursesList,
+    UserPage
   }
 }
 </script>
