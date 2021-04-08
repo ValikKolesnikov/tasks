@@ -21,10 +21,7 @@ class CourseViewSet(mixins.ListModelMixin,
     def participate(self, request, pk):
         course = self.get_object()
         user = request.user
-        data = participation_service.enroll_as_student(user=user, course=course)
-        participation_serializer = serializers.ParticipationRequestSerializer(data=data)
-        participation_serializer.is_valid(raise_exception=True)
-        participation = participation_serializer.save()
+        participation = participation_service.enroll_as_student(user=user, course=course)
         response_serializer = serializers.ParticipationResponseSerializer(participation)
         return Response(data=response_serializer.data)
 
