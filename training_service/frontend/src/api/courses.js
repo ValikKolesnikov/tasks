@@ -12,5 +12,8 @@ export const Courses = {
   },
   getCourse (id) {
     return HTTP.get(`courses/${id}/`)
+  },
+  getCourseDetail (id) {
+    return HTTP.get(`courses/${id}/class_room/`)
   }
 }

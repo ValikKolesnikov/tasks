@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, Group, Permission
 from django.db import models
+from django.db.models import Count
 from polymorphic.models import PolymorphicModel
 
 
@@ -44,8 +45,16 @@ class Participation(models.Model):
 
 class CourseProgress(models.Model):
     completion_date = models.DateField('Completion date', blank=True, null=True)
-    is_complete = models.BooleanField('Is complete')
-    participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
+    participation = models.OneToOneField(Participation, on_delete=models.CASCADE)
+
+    def progress(self):
+        return self.taskprogress_set.count() / self.participation.course.tasks.count() * 100
+
+    def is_complete(self):
+        return self.progress == 100
+
+    def __str__(self):
+        return f'{self.participation.course} - {self.participation.user}'
 
 
 class ReadingMaterial(Task):
@@ -80,11 +89,9 @@ class Answer(models.Model):
         return f'{self.question.text} - {self.text}'
 
 
-class ReadingMaterialProgress(models.Model):
-    reading_material = models.ForeignKey(ReadingMaterial, on_delete=models.CASCADE)
+class TaskProgress(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, default=None)
     course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
 
-
-class TestProgress(models.Model):
-    reading_material = models.ForeignKey(ReadingMaterial, on_delete=models.CASCADE)
-    course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
+    def __str__(self):
+        return f'{self.task} - {self.course_progress.participation.user}'

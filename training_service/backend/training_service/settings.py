@@ -64,6 +64,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30)
+}
+
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'training_service.urls'
