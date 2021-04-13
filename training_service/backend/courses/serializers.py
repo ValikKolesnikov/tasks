@@ -20,12 +20,19 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'answers']
 
 
+class TestProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Test
+        fields = ['id', 'is_complete']
+
+
 class TestResponseSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True)
+    is_complete = serializers.BooleanField()
 
     class Meta:
         model = models.Test
-        fields = ['id', 'name', 'position_number', 'questions']
+        fields = ['id', 'name', 'position_number', 'questions', 'is_complete']
 
 
 class TestSerializer(serializers.ModelSerializer):
@@ -34,10 +41,18 @@ class TestSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'position_number']
 
 
+class ReadingMaterialProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ReadingMaterialProgress
+        fields = ['id', 'is_complete']
+
+
 class ReadingMaterialSerializer(serializers.ModelSerializer):
+    is_complete = serializers.BooleanField()
+
     class Meta:
         model = models.ReadingMaterial
-        fields = ['id', 'title', 'text', 'position_number']
+        fields = ['id', 'title', 'text', 'position_number', 'is_complete']
 
 
 class TaskSerializer(PolymorphicSerializer):
@@ -47,25 +62,10 @@ class TaskSerializer(PolymorphicSerializer):
     }
 
 
-class TaskResponseSerializer(PolymorphicSerializer):
-    model_serializer_mapping = {
-        models.ReadingMaterial: ReadingMaterialSerializer,
-        models.Test: TestResponseSerializer
-    }
-
-
-class CourseDetailSerializer(serializers.ModelSerializer):
-    tasks = TaskResponseSerializer(many=True)
-
-    class Meta:
-        model = models.Course
-        fields = ['id', 'name', 'description', 'tasks']
-
-
 class CourseProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CourseProgress
-        fields = ['id', 'is_complete', 'progress']
+        fields = ['is_complete', 'progress', 'completion_date']
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -100,37 +100,29 @@ class ParticipationResponseSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'course', 'role', 'enroll_time']
 
 
-class TestProgressSerializer(serializers.ModelSerializer):
-    questions = QuestionSerializer(many=True)
-    is_complete = serializers.BooleanField()
-
-    class Meta:
-        model = models.Test
-        fields = ['id', 'name', 'position_number', 'questions', 'is_complete']
-
-
-class ReadingMaterialProgressSerializer(serializers.ModelSerializer):
-    is_complete = serializers.BooleanField()
-
-    class Meta:
-        model = models.ReadingMaterial
-        fields = ['id', 'title', 'text', 'position_number', 'is_complete']
-
-
-class TaskProgressSerializer(PolymorphicSerializer):
+class TaskResponseSerializer(PolymorphicSerializer):
     model_serializer_mapping = {
-        models.ReadingMaterial: ReadingMaterialProgressSerializer,
-        models.Test: TestProgressSerializer
+        models.ReadingMaterial: ReadingMaterialSerializer,
+        models.Test: TestResponseSerializer
     }
 
 
-class CourseShortSerializer(serializers.ModelSerializer):
+class CourseDetailSerializer(serializers.ModelSerializer):
+    tasks = TaskResponseSerializer(many=True)
+
     class Meta:
         model = models.Course
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'tasks']
+
+
+class CourseShortSerializer(serializers.ModelSerializer):
+    progress = CourseProgressSerializer()
+
+    class Meta:
+        model = models.Course
+        fields = ['id', 'name', 'description', 'progress']
 
 
 class CourseClassRoomSerializer(serializers.Serializer):
-    tasks = TaskProgressSerializer(many=True)
+    tasks = TaskResponseSerializer(many=True)
     course = CourseShortSerializer()
-    course_progress = CourseProgressSerializer()

@@ -1,14 +1,24 @@
-from courses.models import TaskProgress, Task, CourseProgress
+from django.db.models import Func, F, Subquery, Count, OuterRef
+
+from courses.models import Task, CourseProgress, TestProgress, ReadingMaterialProgress, Test, ReadingMaterial
+from courses.serializers import TestResponseSerializer
 
 
-def get_course_data(participation):
-    tasks = Task.objects.filter(course__id=participation.course.id)
-    tasks_progresses = TaskProgress.objects.filter(task__in=tasks)
-    tasks_id = tasks_progresses.values_list('task_id', flat=True)
-    for task in tasks:
-        task.is_complete = task.id in tasks_id
+def extract_data_from_participation(participation):
+    course = participation.course
+    tasks = Task.objects.filter(course__id=course.id)
+    test_progress = TestProgress.objects.filter(course_progress__participation_id=participation.id,
+                                                test_id=OuterRef('pk'))
+    reading_material_progress = ReadingMaterialProgress.objects.filter(
+        course_progress__participation_id=participation.id,
+        reading_material_id=OuterRef('pk')
+    )
+    tests = tasks.instance_of(Test).annotate(is_complete=Subquery(test_progress.values('is_complete')))
+    reading_materials = tasks.instance_of(ReadingMaterial).annotate(
+        is_complete=Subquery(reading_material_progress.values('is_complete')))
+    tasks = tests | reading_materials
+    course.progress = CourseProgress.objects.get(participation__id=participation.id)
     return {
         'tasks': tasks,
-        'course': participation.course,
-        'course_progress': CourseProgress.objects.get(participation__id=participation.id)
+        'course': course
     }

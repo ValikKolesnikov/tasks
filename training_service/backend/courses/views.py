@@ -44,7 +44,7 @@ class CourseViewSet(mixins.ListModelMixin,
             user=user,
             course=course
         )
-        course_data = course_service.get_course_data(participation)
+        course_data = course_service.extract_data_from_participation(participation)
         serializer = serializers.CourseClassRoomSerializer(course_data)
         return Response(data=serializer.data)
 

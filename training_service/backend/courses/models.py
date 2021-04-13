@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group, Permission
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Manager
 from polymorphic.models import PolymorphicModel
 
 
@@ -48,7 +48,13 @@ class CourseProgress(models.Model):
     participation = models.OneToOneField(Participation, on_delete=models.CASCADE)
 
     def progress(self):
-        return self.taskprogress_set.count() / self.participation.course.tasks.count() * 100
+        tests_complete_count = TestProgress.objects.filter(course_progress_id=self.id, is_complete=True).count()
+        readings_complete_count = ReadingMaterialProgress.objects.filter(course_progress_id=self.id,
+                                                                         is_complete=True).count()
+        all_task_count = TestProgress.objects.filter(
+            course_progress_id=self.id).count() + ReadingMaterialProgress.objects.filter(
+            course_progress_id=self.id).count()
+        return (tests_complete_count + readings_complete_count) / all_task_count * 100
 
     def is_complete(self):
         return self.progress == 100
@@ -89,9 +95,29 @@ class Answer(models.Model):
         return f'{self.question.text} - {self.text}'
 
 
-class TaskProgress(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, default=None)
+class ReadingMaterialProgress(models.Model):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['reading_material', 'course_progress'], name='reading_material_progress')
+        ]
+
+    reading_material = models.ForeignKey(ReadingMaterial, on_delete=models.CASCADE)
     course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
+    is_complete = models.BooleanField()
 
     def __str__(self):
-        return f'{self.task} - {self.course_progress.participation.user}'
+        return f'{self.reading_material} - {self.course_progress}'
+
+
+class TestProgress(models.Model):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['test', 'course_progress'], name='test_progress')
+        ]
+
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
+    is_complete = models.BooleanField()
+
+    def __str__(self):
+        return f'{self.test} - {self.course_progress}'
