@@ -2,6 +2,8 @@ from django.contrib.auth.models import User, Group, Permission
 from django.db import models
 from polymorphic.models import PolymorphicModel
 
+from courses.services import course_service
+
 
 class Role(models.TextChoices):
     TEACHER = 'TH', 'Teacher'
@@ -46,17 +48,11 @@ class CourseProgress(models.Model):
     completion_date = models.DateField('Completion date', blank=True, null=True)
     participation = models.OneToOneField(Participation, on_delete=models.CASCADE)
 
-    def progress(self):
-        tests_complete_count = TestProgress.objects.filter(course_progress_id=self.id, is_complete=True).count()
-        readings_complete_count = ReadingMaterialProgress.objects.filter(course_progress_id=self.id,
-                                                                         is_complete=True).count()
-        all_task_count = TestProgress.objects.filter(
-            course_progress_id=self.id).count() + ReadingMaterialProgress.objects.filter(
-            course_progress_id=self.id).count()
-        return (tests_complete_count + readings_complete_count) / all_task_count * 100
+    def get_progress(self):
+        return course_service.get_progress(self)
 
     def is_complete(self):
-        return self.progress == 100
+        return self.get_progress() == 100
 
     def __str__(self):
         return f'{self.participation.course} - {self.participation.user}'

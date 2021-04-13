@@ -8,7 +8,7 @@ from rest_framework.response import Response
 import courses.serializers as serializers
 from .models import Course, Participation
 from .pagination import CourseListPagination
-from .services import participation_service, course_service
+from .services import participation_service
 
 
 class CourseViewSet(mixins.ListModelMixin,
@@ -44,6 +44,10 @@ class CourseViewSet(mixins.ListModelMixin,
             user=user,
             course=course
         )
-        course_data = course_service.extract_data_from_participation(participation)
+        course = participation.course
+        course_data = {
+            'tasks': course.tasks,
+            'course': course
+        }
         serializer = serializers.CourseClassRoomSerializer(course_data, context={'participation': participation})
         return Response(data=serializer.data)
