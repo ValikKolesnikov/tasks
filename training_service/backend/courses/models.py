@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User, Group, Permission
 from django.db import models
-from django.db.models import Count, Manager
 from polymorphic.models import PolymorphicModel
 
 
