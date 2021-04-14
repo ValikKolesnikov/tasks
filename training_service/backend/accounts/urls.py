@@ -12,7 +12,7 @@ router.register(r'groups', views.GroupViewSet, basename='groups')
 urlpatterns = [
     path('tokens/obtain/', views.ObtainTokenView.as_view(), name='token_obtain'),
     path('tokens/verify/', jwt_views.TokenVerifyView.as_view(), name='token_verify'),
-    path('tokens/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh')
+    path('tokens/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 urlpatterns += router.urls

@@ -6,9 +6,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 import courses.serializers as serializers
-from .models import Course, Participation
+from courses.services import test_service, reading_material_service
+from .models import Course, Participation, Test, ReadingMaterial, CourseProgress, ReadingMaterialProgress, TestProgress
 from .pagination import CourseListPagination
-from .services import participation_service
+from .services import participation_service, test_service
 
 
 class CourseViewSet(mixins.ListModelMixin,
@@ -51,3 +52,31 @@ class CourseViewSet(mixins.ListModelMixin,
         }
         serializer = serializers.CourseClassRoomSerializer(course_data, context={'participation': participation})
         return Response(data=serializer.data)
+
+
+class ReadingMaterialViewSet(viewsets.GenericViewSet):
+    queryset = ReadingMaterial.objects.all()
+
+    @action(methods=['post'], detail=True)
+    def complete(self, request, pk):
+        reading_material = self.get_object()
+        reading_material_service.set_complete(reading_material=reading_material,
+                                              user=request.user)
+        return Response(status=status.HTTP_200_OK)
+
+
+class TestViewSet(viewsets.GenericViewSet):
+    queryset = Test.objects.all()
+
+    @action(methods=['post'], detail=True)
+    def complete(self, request, pk):
+        test = self.get_object()
+        test_service.set_complete(test=test,
+                                  user=request.user)
+        return Response(status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=True)
+    def check_answer(self, request, pk):
+        test = self.get_object()
+        is_right = test_service.is_answer_right(test, request.data.get('answers'))
+        return Response(data={'is_right': is_right})
