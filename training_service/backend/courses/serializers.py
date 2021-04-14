@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
+from courses.services import course_service
 
 from accounts.serializers import UserResponseSerializer
 from courses.services import progress_service
@@ -79,11 +80,14 @@ class TaskSerializer(PolymorphicSerializer):
 
 
 class CourseProgressSerializer(serializers.ModelSerializer):
-    value = serializers.FloatField()
+    value = serializers.SerializerMethodField()
 
     class Meta:
         model = models.CourseProgress
         fields = ['is_complete', 'completion_date', 'value']
+
+    def get_value(self, obj):
+        return course_service.calculate_course_progress(course_progress=obj)
 
 
 class CourseSerializer(serializers.ModelSerializer):
