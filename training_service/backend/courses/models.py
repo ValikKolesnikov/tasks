@@ -47,12 +47,7 @@ class Participation(models.Model):
 class CourseProgress(models.Model):
     completion_date = models.DateField('Completion date', blank=True, null=True)
     participation = models.OneToOneField(Participation, on_delete=models.CASCADE)
-
-    def get_progress(self):
-        return course_service.get_progress(self)
-
-    def is_complete(self):
-        return self.get_progress() == 100
+    is_complete = models.BooleanField('Is complete', default=False)
 
     def __str__(self):
         return f'{self.participation.course} - {self.participation.user}'

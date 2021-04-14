@@ -1,6 +1,7 @@
 import jwt
 from django.contrib.auth.models import User
 from rest_framework.generics import get_object_or_404
+
 from training_service.settings import SECRET_KEY
 
 

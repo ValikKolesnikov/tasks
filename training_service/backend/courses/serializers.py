@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 from rest_polymorphic.serializers import PolymorphicSerializer
 
 from accounts.serializers import UserResponseSerializer
+from courses.services import progress_service
 from . import models
 
 
@@ -36,11 +36,10 @@ class TestResponseSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'position_number', 'questions', 'progress']
 
     def get_progress(self, obj):
-        progress = models.TestProgress.objects.filter(
-            course_progress__participation_id=self.context['participation'],
-            test_id=obj.id)
+        progress = progress_service.get_test_progress_or_none(test_id=obj.id,
+                                                              participation_id=self.context['participation'])
         if progress:
-            return TestProgressSerializer(progress[0]).data
+            return TestProgressSerializer(progress).data
         return None
 
 
@@ -64,11 +63,11 @@ class ReadingMaterialSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'text', 'position_number', 'progress']
 
     def get_progress(self, obj):
-        progress = models.ReadingMaterialProgress.objects.filter(
-            course_progress__participation_id=self.context['participation'],
-            reading_material_id=obj.id)
+        progress = progress_service.get_reading_material_progress_or_none(reading_material_id=obj.id,
+                                                                          participation_id=self.context[
+                                                                              'participation'])
         if progress:
-            return TestProgressSerializer(progress[0]).data
+            return ReadingMaterialProgressSerializer(progress).data
         return None
 
 
@@ -80,9 +79,11 @@ class TaskSerializer(PolymorphicSerializer):
 
 
 class CourseProgressSerializer(serializers.ModelSerializer):
+    value = serializers.FloatField()
+
     class Meta:
         model = models.CourseProgress
-        fields = ['is_complete', 'get_progress', 'completion_date']
+        fields = ['is_complete', 'completion_date', 'value']
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -132,9 +133,10 @@ class CourseShortSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'progress']
 
     def get_progress(self, obj):
-        progress = get_object_or_404(queryset=models.CourseProgress.objects.all(),
-                                     participation_id=self.context['participation'])
-        return CourseProgressSerializer(progress).data
+        progress = progress_service.get_course_progress_or_none(participation_id=self.context['participation'])
+        if progress:
+            return CourseProgressSerializer(progress).data
+        return None
 
 
 class CourseClassRoomSerializer(serializers.Serializer):
