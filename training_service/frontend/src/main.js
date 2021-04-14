@@ -9,6 +9,7 @@ import Login from '@/components/accounts/Login'
 import SignUp from '@/components/accounts/SignUp'
 import CoursesList from '@/components/courses/CoursesList'
 import CoursePage from '@/components/courses/CoursePage'
+import CourseClassRoom from '@/components/courses/CourseClassRoom'
 import Home from '@/components/Home'
 import UpdateUser from '@/components/accounts/UpdateUser'
 import UserPage from '@/components/accounts/UserPage'
@@ -55,6 +56,11 @@ const routes = [
     path: '/courses/:id',
     name: 'coursePage',
     component: CoursePage
+  },
+  {
+    path: '/courses/:id/class_room',
+    name: 'courseClassRoom',
+    component: CourseClassRoom
   }
 ]
 

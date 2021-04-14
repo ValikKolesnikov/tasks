@@ -1,8 +1,10 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
+from courses.services import course_service
 
 from accounts.serializers import UserResponseSerializer
+from courses.services import progress_service
 from . import models
 
 
@@ -20,12 +22,26 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'answers']
 
 
+class TestProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.TestProgress
+        fields = ['is_complete']
+
+
 class TestResponseSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True)
+    progress = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Test
-        fields = ['id', 'name', 'position_number', 'questions']
+        fields = ['id', 'name', 'position_number', 'questions', 'progress']
+
+    def get_progress(self, obj):
+        progress = progress_service.get_test_progress_or_none(test_id=obj.id,
+                                                              participation_id=self.context['participation'])
+        if progress:
+            return TestProgressSerializer(progress).data
+        return None
 
 
 class TestSerializer(serializers.ModelSerializer):
@@ -34,10 +50,26 @@ class TestSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'position_number']
 
 
+class ReadingMaterialProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ReadingMaterialProgress
+        fields = ['is_complete']
+
+
 class ReadingMaterialSerializer(serializers.ModelSerializer):
+    progress = serializers.SerializerMethodField()
+
     class Meta:
         model = models.ReadingMaterial
-        fields = ['id', 'title', 'text', 'position_number']
+        fields = ['id', 'title', 'text', 'position_number', 'progress']
+
+    def get_progress(self, obj):
+        progress = progress_service.get_reading_material_progress_or_none(reading_material_id=obj.id,
+                                                                          participation_id=self.context[
+                                                                              'participation'])
+        if progress:
+            return ReadingMaterialProgressSerializer(progress).data
+        return None
 
 
 class TaskSerializer(PolymorphicSerializer):
@@ -47,19 +79,15 @@ class TaskSerializer(PolymorphicSerializer):
     }
 
 
-class TaskResponseSerializer(PolymorphicSerializer):
-    model_serializer_mapping = {
-        models.ReadingMaterial: ReadingMaterialSerializer,
-        models.Test: TestResponseSerializer
-    }
-
-
-class CourseDetailSerializer(serializers.ModelSerializer):
-    tasks = TaskResponseSerializer(many=True)
+class CourseProgressSerializer(serializers.ModelSerializer):
+    value = serializers.SerializerMethodField()
 
     class Meta:
-        model = models.Course
-        fields = ['id', 'name', 'description', 'tasks']
+        model = models.CourseProgress
+        fields = ['is_complete', 'completion_date', 'value']
+
+    def get_value(self, obj):
+        return course_service.calculate_course_progress(course_progress=obj)
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -92,3 +120,29 @@ class ParticipationResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Participation
         fields = ['id', 'user', 'course', 'role', 'enroll_time']
+
+
+class TaskResponseSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        models.ReadingMaterial: ReadingMaterialSerializer,
+        models.Test: TestResponseSerializer
+    }
+
+
+class CourseShortSerializer(serializers.ModelSerializer):
+    progress = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Course
+        fields = ['id', 'name', 'description', 'progress']
+
+    def get_progress(self, obj):
+        progress = progress_service.get_course_progress_or_none(participation_id=self.context['participation'])
+        if progress:
+            return CourseProgressSerializer(progress).data
+        return None
+
+
+class CourseClassRoomSerializer(serializers.Serializer):
+    tasks = TaskResponseSerializer(many=True)
+    course = CourseShortSerializer()

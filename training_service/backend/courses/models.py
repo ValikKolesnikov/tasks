@@ -2,6 +2,8 @@ from django.contrib.auth.models import User, Group, Permission
 from django.db import models
 from polymorphic.models import PolymorphicModel
 
+from courses.services import course_service
+
 
 class Role(models.TextChoices):
     TEACHER = 'TH', 'Teacher'
@@ -44,8 +46,11 @@ class Participation(models.Model):
 
 class CourseProgress(models.Model):
     completion_date = models.DateField('Completion date', blank=True, null=True)
-    is_complete = models.BooleanField('Is complete')
-    participation = models.ForeignKey(Participation, on_delete=models.CASCADE)
+    participation = models.OneToOneField(Participation, on_delete=models.CASCADE)
+    is_complete = models.BooleanField('Is complete', default=False)
+
+    def __str__(self):
+        return f'{self.participation.course} - {self.participation.user}'
 
 
 class ReadingMaterial(Task):
@@ -81,10 +86,28 @@ class Answer(models.Model):
 
 
 class ReadingMaterialProgress(models.Model):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['reading_material', 'course_progress'], name='reading_material_progress')
+        ]
+
     reading_material = models.ForeignKey(ReadingMaterial, on_delete=models.CASCADE)
     course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
+    is_complete = models.BooleanField()
+
+    def __str__(self):
+        return f'{self.reading_material} - {self.course_progress}'
 
 
 class TestProgress(models.Model):
-    reading_material = models.ForeignKey(ReadingMaterial, on_delete=models.CASCADE)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['test', 'course_progress'], name='test_progress')
+        ]
+
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
     course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
+    is_complete = models.BooleanField()
+
+    def __str__(self):
+        return f'{self.test} - {self.course_progress}'

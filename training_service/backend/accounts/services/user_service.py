@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 
 
 def create_user(username, email, first_name, last_name, password, group):
