@@ -9,6 +9,7 @@ router.register(r'tests', views.TestViewSet, basename='tests')
 router.register(r'reading_materials', views.ReadingMaterialViewSet, basename='reading_materials')
 
 urlpatterns = [
+
 ]
 
 urlpatterns += router.urls

@@ -11,5 +11,14 @@ def calculate_course_progress(course_progress):
 
 
 def create_course_progress(participation):
-    course_progress = models.CourseProgress(participation=participation)
-    course_progress.save()
+    course_progress, is_created = models.CourseProgress.objects.get_or_create(participation=participation)
+    if is_created:
+        course_progress.save()
+
+
+def get_course_progress(course, user):
+    course_progress, is_created = models.CourseProgress.objects.get_or_create(participation__user=user,
+                                                                              participation__course=course)
+    if is_created:
+        course_progress.save()
+    return course_progress

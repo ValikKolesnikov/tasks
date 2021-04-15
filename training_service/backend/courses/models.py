@@ -71,7 +71,6 @@ class Test(Task):
 class Question(models.Model):
     text = models.CharField('Text', max_length=500)
     test = models.ForeignKey(Test, related_name='questions', on_delete=models.CASCADE)
-    is_done = models.BooleanField('Is done', default=False)
 
     def __str__(self):
         return f'{self.test.name} - {self.text}'
@@ -112,3 +111,17 @@ class TestProgress(models.Model):
 
     def __str__(self):
         return f'{self.test} - {self.course_progress}'
+
+
+class QuestionProgress(models.Model):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['question', 'course_progress'], name='question_progress')
+        ]
+
+    question = models.ForeignKey(Question, related_name='question_progresses', on_delete=models.CASCADE)
+    course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
+    is_done = models.BooleanField('Is done', default=False)
+
+    def __str__(self):
+        return f'{self.question} - {self.course_progress}'

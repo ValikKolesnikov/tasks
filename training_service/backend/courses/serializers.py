@@ -16,10 +16,24 @@ class AnswerSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     answers = AnswerSerializer(many=True)
+    progress = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Question
-        fields = ['id', 'text', 'answers']
+        fields = ['id', 'text', 'answers', 'progress']
+
+    def get_progress(self, obj):
+        progress = models.QuestionProgress.objects.filter(course_progress__participation=self.context['participation'],
+                                                          question=obj)
+        if progress:
+            return QuestionSerializer(progress).data
+        return None
+
+
+class QuestionProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.QuestionProgress
+        fields = ['is_done']
 
 
 class TestProgressSerializer(serializers.ModelSerializer):
