@@ -6,9 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 import courses.serializers as serializers
-from .models import Course, Participation
+from courses import models
+from courses.services import reading_material_service
+from .models import Course, Participation, Test, ReadingMaterial
 from .pagination import CourseListPagination
-from .services import participation_service
+from .services import participation_service, test_service, course_service
 
 
 class CourseViewSet(mixins.ListModelMixin,
@@ -25,6 +27,7 @@ class CourseViewSet(mixins.ListModelMixin,
         participation = None
         try:
             participation = participation_service.enroll_as_student(user=user, course=course)
+            course_service.create_course_progress(participation=participation)
         except IntegrityError:
             return Response(data='You already enrolled in this course', status=status.HTTP_400_BAD_REQUEST)
         response_serializer = serializers.ParticipationResponseSerializer(participation)
@@ -51,3 +54,48 @@ class CourseViewSet(mixins.ListModelMixin,
         }
         serializer = serializers.CourseClassRoomSerializer(course_data, context={'participation': participation})
         return Response(data=serializer.data)
+
+
+class ReadingMaterialViewSet(mixins.RetrieveModelMixin,
+                             viewsets.GenericViewSet):
+    queryset = ReadingMaterial.objects.all()
+    serializer_class = serializers.ReadingMaterialSerializer
+
+    @action(methods=['post'], detail=True)
+    def complete(self, request, pk):
+        reading_material = self.get_object()
+        user = request.user
+        reading_material_service.create_reading_material_progress(
+            reading_material=reading_material,
+            user=user)
+        reading_material_service.set_complete(reading_material=reading_material,
+                                              user=user)
+        return Response(status=status.HTTP_200_OK)
+
+
+class TestViewSet(viewsets.GenericViewSet):
+    queryset = Test.objects.all()
+    serializer_class = serializers.TestResponseSerializer
+
+    @action(methods=['post'], detail=True)
+    def complete(self, request, pk):
+        test = self.get_object()
+        user = request.user
+        test_service.create_test_progress(test=test, user=user)
+        if test_service.is_all_questions_done(test, user):
+            test_service.set_complete(test=test,
+                                      user=user)
+            return Response(status=status.HTTP_200_OK)
+        return Response(data={'error': 'Test is not done'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['post'], detail=True)
+    def check_answer(self, request, pk):
+        test = self.get_object()
+        user = request.user
+        question = get_object_or_404(queryset=models.Question.objects.all(), id=request.data.get('question'))
+        is_right = test_service.is_answer_right(question, request.data.get('answers'))
+        if is_right:
+            test_service.set_question_done(question=question,
+                                           test=test,
+                                           user=user)
+        return Response(data={'is_right': is_right})

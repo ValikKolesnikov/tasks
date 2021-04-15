@@ -93,7 +93,7 @@ class ReadingMaterialProgress(models.Model):
 
     reading_material = models.ForeignKey(ReadingMaterial, on_delete=models.CASCADE)
     course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
-    is_complete = models.BooleanField()
+    is_complete = models.BooleanField('Is complete', default=False)
 
     def __str__(self):
         return f'{self.reading_material} - {self.course_progress}'
@@ -107,7 +107,21 @@ class TestProgress(models.Model):
 
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
-    is_complete = models.BooleanField()
+    is_complete = models.BooleanField('Is complete', default=False)
 
     def __str__(self):
         return f'{self.test} - {self.course_progress}'
+
+
+class QuestionProgress(models.Model):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['question', 'course_progress'], name='question_progress')
+        ]
+
+    question = models.ForeignKey(Question, related_name='question_progresses', on_delete=models.CASCADE)
+    course_progress = models.ForeignKey(CourseProgress, on_delete=models.CASCADE)
+    is_done = models.BooleanField('Is done', default=False)
+
+    def __str__(self):
+        return f'{self.question} - {self.course_progress}'
